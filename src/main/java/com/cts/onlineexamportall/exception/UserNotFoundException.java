@@ -3,7 +3,7 @@ package com.cts.onlineexamportall.exception;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@SuppressWarnings("serial")
+// @SuppressWarnings("serial")
 public class UserNotFoundException extends RuntimeException {
     private static final Logger logger = LogManager.getLogger(UserNotFoundException.class);
     private String message;
