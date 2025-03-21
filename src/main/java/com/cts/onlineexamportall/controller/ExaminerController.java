@@ -22,12 +22,15 @@ import com.cts.onlineexamportall.dto.QuestionDTO;
 import com.cts.onlineexamportall.dto.Response;
 import com.cts.onlineexamportall.exception.ExamExistsException;
 import com.cts.onlineexamportall.exception.ExamNotFoundException;
+import com.cts.onlineexamportall.exception.InvalidResponseException;
 import com.cts.onlineexamportall.exception.MandatoryFieldMissingException;
+import com.cts.onlineexamportall.exception.ReportNotFoundException;
 import com.cts.onlineexamportall.model.Exam;
 import com.cts.onlineexamportall.model.Question;
 import com.cts.onlineexamportall.model.Report;
 import com.cts.onlineexamportall.service.ExamService;
 import com.cts.onlineexamportall.service.QuestionService;
+import com.cts.onlineexamportall.service.ReportService;
 
 @RestController
 @RequestMapping("/examiner")
@@ -39,6 +42,9 @@ public class ExaminerController {
  
     @Autowired
     private ExamService examService;
+
+    @Autowired   
+    private ReportService reportService;
  
  
     //=============================================
@@ -188,9 +194,33 @@ public class ExaminerController {
         }
     }   
  
-    /*
-     * Delete/ update questions in an EXAM
-     */
+    @PutMapping("updateQuestionsInExam/{examId}")
+    public ResponseEntity<Response<String>> updateQuestionsInExam(@PathVariable long examId, @RequestBody List<QuestionDTO> questions) {
+        try{ 
+            examService.updateSelectedQuestions(examId, questions);
+            Response<String> response = new Response<>(true, HttpStatus.ACCEPTED, "Questions updated successfully in the give Exam!", null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch( ExamNotFoundException ex ){
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "Exam not found!", ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/updateAQuestionInExam/{examId}")
+    public ResponseEntity<Response<String>> updateAQuestionInExam(@PathVariable long examId ,
+                                                                    @RequestParam String originalDescription,
+                                                                    @RequestBody QuestionDTO updatedQuestionDTO){
+        try{
+            examService.updateAQuestionInExam( examId, originalDescription,updatedQuestionDTO);
+            Response<String> response = new Response<>(true, HttpStatus.ACCEPTED, "Question updated successfully in the Exam!", null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch(ExamNotFoundException ex){
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "Exam not found!",null);
+            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+        }
+
+    }
  
     //=============================================
     //=========== Response Module =================
@@ -202,11 +232,25 @@ public class ExaminerController {
             Response<Report> response = new Response<>(true, HttpStatus.OK, report, null);
 			return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        catch(IllegalArgumentException ex){
+        catch(InvalidResponseException ex){
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/updateFeedback/{examId}/{username}")
+    public ResponseEntity<Response<?>> updateFeedback(@PathVariable String username, @PathVariable long examId, @RequestBody String feedback) {
+        try {
+            Report report = reportService.updateReportFeedback(username, examId, feedback);            
+            Response<Report> response = new Response<>(true, HttpStatus.OK, report, null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } 
+        catch (ReportNotFoundException ex) {
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+ 
       
 
 }

@@ -26,4 +26,6 @@ public interface ReportDAO extends JpaRepository<Report, Long> {
         }
         return reports;
     }
+
+    Report findByUserNameAndExamId(String userName, long examId);
 }

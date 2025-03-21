@@ -27,4 +27,6 @@ public class Report {
     private double score;
 
     private double percentage;
+
+    private String feedback = "Feedback is yet to be assigned";
 }

@@ -19,6 +19,19 @@ public class ReportService {
     @Autowired
     private ReportDAO reportDAO;
 
+
+    public Report updateReportFeedback(String userName, long examId, String feedback) {
+        try{ 
+            Report report = reportDAO.findByUserNameAndExamId(userName, examId);
+            logger.info("Report found for the given userName and examId");
+            report.setFeedback(feedback);
+            return reportDAO.save(report);
+        }catch(ReportNotFoundException e){
+            logger.error("Report not found for the given userName and examId");
+            throw new ReportNotFoundException("Report not found for the given userName and examId");
+        }
+    }
+
     public List<Report> getReportsByUserName(String username) {
         logger.info("Fetching reports for username: {}", username);
         try {
