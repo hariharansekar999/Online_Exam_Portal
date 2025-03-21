@@ -19,6 +19,16 @@ public class ReportService {
     @Autowired
     private ReportDAO reportDAO;
 
+    public List<Report> getAllReports() {
+        logger.info("Fetching all reports");
+        List<Report> reports = reportDAO.findAll();
+        if (reports.isEmpty()) {
+            logger.warn("No reports found");
+            throw new ReportNotFoundException("No reports found");
+        }
+        logger.info("Reports found");
+        return reports;
+    }
 
     public Report updateReportFeedback(String userName, long examId, String feedback) {
         try{ 

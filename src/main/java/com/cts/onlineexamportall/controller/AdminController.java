@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cts.onlineexamportall.dto.Response;
 import com.cts.onlineexamportall.exception.PasswordMisMatchException;
+import com.cts.onlineexamportall.exception.ReportNotFoundException;
+import com.cts.onlineexamportall.model.Report;
 import com.cts.onlineexamportall.model.User;
+import com.cts.onlineexamportall.service.ReportService;
 import com.cts.onlineexamportall.service.UserService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +30,9 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ReportService reportService;
 
     @GetMapping("/getAllUsers")
     public ResponseEntity<Response<?>> getAllUsers() {
@@ -57,4 +63,36 @@ public class AdminController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/getReports/{username}")
+    public ResponseEntity<Response<?>> getReports(@PathVariable String username) {
+        try {
+            logger.info("Fetching reports for user with username: {}", username);
+            List<Report> reports = reportService.getReportsByUserName(username);
+            Response<List<Report>> response = new Response<>(true, HttpStatus.OK, reports, null);
+            logger.info("Successfully fetched reports for user with username: {}", username);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException ex) {
+            logger.error("Error fetching reports: {}", ex.getMessage());
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "No reports found!", ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getAllReports")
+    public ResponseEntity<Response<?>> getAllReports(){
+        try{
+            logger.info("Fetching Reports in the database");
+            List<Report> reports = reportService.getAllReports();
+            Response<List<Report>> response = new Response<>(true, HttpStatus.OK, reports, null);
+            logger.info("Successfully fetched all reports");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch(ReportNotFoundException ex){
+            logger.error("Error fetching reports: {}", ex.getMessage());
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "No reports found!", ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }
