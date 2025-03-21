@@ -26,4 +26,6 @@ public interface QuestionDAO extends JpaRepository<Question, Long> {
         }
         return questions;
     }
+
+    Question findByDescription(String description);
 }

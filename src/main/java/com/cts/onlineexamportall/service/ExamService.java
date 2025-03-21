@@ -18,6 +18,7 @@ import com.cts.onlineexamportall.dao.UserDAO;
 import com.cts.onlineexamportall.dto.ExamAnswersDTO;
 import com.cts.onlineexamportall.dto.ExamDTO;
 import com.cts.onlineexamportall.dto.ExamResponseDTO;
+import com.cts.onlineexamportall.dto.QuestionDTO;
 import com.cts.onlineexamportall.exception.UserNotFoundException;
 import com.cts.onlineexamportall.model.Exam;
 import com.cts.onlineexamportall.model.Question;
@@ -135,6 +136,52 @@ public class ExamService {
         }
     }
 
+    public void updateSelectedQuestions(long examId, List<QuestionDTO> updatedQuestions) {
+        Optional<Exam> optionalExam = examDAO.findById(examId);
+        if (optionalExam.isPresent()) {
+            Exam exam = optionalExam.get();
+            
+            List<Question> existingQuestions = examDAO.getAllQuestionsByExamId(examId);
+            
+            for (QuestionDTO updatedQuestion : updatedQuestions) {
+                for( int i = 0 ; i < existingQuestions.size() ; i++ ){
+                    if( updatedQuestion.getDescription() == existingQuestions.get(i).getDescription()){
+                        existingQuestions.get(i).setCategory(updatedQuestion.getCategory());
+                        existingQuestions.get(i).setDifficulty(updatedQuestion.getDifficulty());
+                        existingQuestions.get(i).setCategory(updatedQuestion.getCorrectAnswer());
+                    }
+                }
+            }
+            exam.setQuestions(existingQuestions);
+            examDAO.save(exam);
+        } else {
+            throw new ExamNotFoundException("Exam not found");
+        }
+    }
+
+    public void updateAQuestionInExam(long examId, String originalDescription, QuestionDTO updatedQuestionDTO) {
+        Optional<Exam> optionalExam = examDAO.findById(examId);
+
+        if( optionalExam == null ){
+            throw new ExamNotFoundException("Exam doesnt exist");
+        }
+        Exam exam = optionalExam.get();
+
+        List<Question> existingQuestions = examDAO.getAllQuestionsByExamId(examId);
+
+            for( Question quest : existingQuestions ){
+                if( quest.getDescription().equals(originalDescription) ){
+                    quest.setDescription(updatedQuestionDTO.getDescription());
+                    quest.setCategory(updatedQuestionDTO.getCategory());
+                    quest.setCorrectAnswer(updatedQuestionDTO.getCorrectAnswer());
+                    quest.setDifficulty(updatedQuestionDTO.getDifficulty());
+                }
+            }
+            
+        exam.setQuestions(existingQuestions);
+        examDAO.save(exam);
+    }
+
     //=============================================
     //=========== Response Module =================
     //=============================================
@@ -238,5 +285,10 @@ public class ExamService {
             e.printStackTrace();
         }
     }
+
+    
+
+   
+ 
 
 }
