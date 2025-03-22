@@ -30,13 +30,14 @@ public class SecurityConfig {
 
     private static final Logger logger = LogManager.getLogger(SecurityConfig.class);
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    // @Autowired
+    // private UserDetailsService userDetailsService;
 
     @Autowired
     private JwtFilter jwtFilter;
 
-   AccessDeniedHandler accessDeniedHandler;
+    @Autowired
+    private AccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public GrantedAuthorityDefaults grantedAuthorityDefaults() {
@@ -67,14 +68,14 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        logger.info("Configuring authentication provider");
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService);
-        return provider;
-    }
+    // @Bean
+    // public AuthenticationProvider authenticationProvider() {
+    //     logger.info("Configuring authentication provider");
+    //     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    //     provider.setPasswordEncoder(passwordEncoder());
+    //     provider.setUserDetailsService(userDetailsService);
+    //     return provider;
+    // }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
