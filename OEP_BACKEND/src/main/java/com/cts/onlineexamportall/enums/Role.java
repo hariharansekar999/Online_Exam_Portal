@@ -5,3 +5,7 @@ public enum Role {
 	EXAMINER,
 	STUDENT
 }
+
+/*
+ * ENUMS are named constants
+ */
