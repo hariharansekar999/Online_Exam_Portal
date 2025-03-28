@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminController {
+public class AdminController {                      
 
     private static final Logger logger = LogManager.getLogger(AdminController.class);
 
