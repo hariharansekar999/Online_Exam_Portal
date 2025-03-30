@@ -1,12 +1,16 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, NgModule } from "@angular/core";
+import { RouterModule } from "@angular/router";
+import { HeaderComponent } from "./header/header.component";
 
 @Component({
-  selector: 'app-root',
-  imports: [RouterOutlet],
+  selector: 'app-root', // Matches the <app-root> in index.html
+  standalone: true,
+  imports: [RouterModule, HeaderComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css'],
 })
+
+
 export class AppComponent {
   title = 'OEP-app';
 }
