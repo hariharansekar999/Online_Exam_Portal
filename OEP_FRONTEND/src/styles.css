@@ -1,1 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
+html, body {
+    height: 100%; /* Ensure the html and body take up the full viewport height */
+    margin: 0; /* Remove default browser margins */
+  }
+  
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure the container takes at least the full viewport height */
+  }
+  
+  .content {
+    flex-grow: 1; /* Allow the content area to take up remaining vertical space */
+  }
+  

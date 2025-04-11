@@ -1,0 +1,45 @@
+<style>
+    /* Basic styling to potentially hide the form initially using CSS */
+    body[data-loading='true'] .login-container > *:not(.d-flex.justify-content-center) {
+      display: none;
+    }
+</style>
+<app-header></app-header>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div *ngIf="isLoading; else showForm" class="d-flex justify-content-center">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <ng-template #showForm>
+                <h2 class="text-center mb-4 text-white">Login</h2>
+                <form #loginForm="ngForm" (ngSubmit)="login()">
+                    <div class="form-group ">
+                        <label for="username" class="form-label text-white">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" [(ngModel)]="loginData.username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label text-white">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" [(ngModel)]="loginData.password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="role" class="form-label text-white">Role</label>
+                        <select class="form-select" id="role" name="role" [(ngModel)]="loginData.role" required>
+                            <option value="" disabled selected>Select your role</option>
+                            <option value="STUDENT">Student</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="EXAMINER">Examiner</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" [disabled]="isLoading">
+                        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Login
+                    </button>
+                    </form>
+            </ng-template>
+        </div>
+    </div>
+</body>

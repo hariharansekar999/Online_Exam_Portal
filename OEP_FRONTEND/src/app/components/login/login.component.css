@@ -1,0 +1,15 @@
+body {
+    background-color: #fcfbfb;
+}
+.login-container {
+    max-height: 750px;
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: #634545;
+    border-radius: 15px;
+    box-shadow: 0 0 50px rgba(218, 68, 68, 0.1);
+}
+.form-group {
+    margin-bottom: 11px;
+}

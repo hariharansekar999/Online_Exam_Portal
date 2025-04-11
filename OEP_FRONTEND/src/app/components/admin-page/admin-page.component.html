@@ -1,0 +1,80 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand">Online Exam Portal</a>
+        <div class="d-flex ms-auto">
+            <div class="dropdown">
+                <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <strong>Admin</strong>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end"> <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Sign out</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="d-flex flex-nowrap">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 250px; height: 81.5vh;">
+
+        <div class="mb-1 p-2">
+            <h4>Hey Admin</h4>
+            <h6>Your menu is right below!</h6>
+        </div>
+
+       
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a  class="nav-link text-white" aria-current="page" [class.active]="selectedOption === 'users'" (click)="selectOption('users')">
+                    <i class="bi bi-people me-2"></i>
+                    Users
+                </a>
+            </li>
+            <li>
+                <a  class="nav-link text-white" [class.active]="selectedOption === 'exams'" (click)="selectOption('exams')">
+                    <i class="bi bi-list-check me-2"></i>
+                    Exams
+                </a>
+            </li>
+            <li>
+                <a  class="nav-link text-white" [class.active]="selectedOption === 'register'" (click)="selectOption('register')">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Register user
+                </a>
+            </li>
+            <li>
+                <a class="nav-link text-white" [class.active]="selectedOption === 'reports'" (click)="selectOption('reports')">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i>
+                    Reports
+                </a>
+            </li>
+        </ul>
+        <hr>
+    </div>
+
+    <div class="flex-grow-1 p-3">
+        <div *ngIf="selectedOption === 'users'">
+            <h3>Users</h3>
+            <p>Content for the Users section.</p>
+        </div>
+        <div *ngIf="selectedOption === 'exams'">
+            <h3>Exams</h3>
+            <p>Content for the Exams section.</p>
+        </div>
+        <div *ngIf="selectedOption === 'register'">
+            <h3>Register User</h3>
+            <p>Content for the Register User section.</p>
+        </div>
+        <div *ngIf="selectedOption === 'reports'">
+            <h3>Reports</h3>
+            <p>Content for the Reports section.</p>
+        </div>
+        <div *ngIf="!selectedOption">
+            <h3>Dashboard Overview</h3>
+            <p>Select an option from the sidebar to view details.</p>
+        </div>
+    </div>
+</main>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

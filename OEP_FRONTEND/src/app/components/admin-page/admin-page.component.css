@@ -1,0 +1,10 @@
+.dropdown-menu {
+    max-width: 300px; /* Adjust this value as needed */
+    overflow-x: auto; /* Add horizontal scroll if content is wider */
+    overflow-y: auto; /* Add vertical scroll if content is too long */
+    max-height: 500px; /* Optional: Set a maximum height for vertical scrolling */
+  }
+  
+  .dropdown-item {
+    white-space: nowrap; /* Prevent text from wrapping and causing wider menu */
+  }
