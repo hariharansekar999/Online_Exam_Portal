@@ -166,4 +166,9 @@ public class UserService  {
         userDAO.delete(user);
         logger.info("User deleted successfully with username: {}", username);
     }
+
+    public String getRole(String username) {
+        // TODO Auto-generated method stub
+        return userDAO.findByUserName(username).getRoles().toString();
+    }
 }

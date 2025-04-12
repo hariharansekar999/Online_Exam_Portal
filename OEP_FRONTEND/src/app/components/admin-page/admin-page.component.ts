@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-admin-page',
@@ -8,6 +10,8 @@ import { Component } from '@angular/core';
   styleUrl: './admin-page.component.css'
 })
 export class AdminPageComponent {
+  constructor(private authService: AuthService, private router: Router) { }
+  
   selectedOption: string | null = null;
 
   selectOption(option: string): void {
@@ -16,4 +20,8 @@ export class AdminPageComponent {
     console.log('Selected option:', option);
   }
 
+  logout(): void {
+    this.authService.removeToken(); // Remove the token from localStorage
+    this.router.navigate(['/login']); // Redirect the user to the login page
+  }
 }

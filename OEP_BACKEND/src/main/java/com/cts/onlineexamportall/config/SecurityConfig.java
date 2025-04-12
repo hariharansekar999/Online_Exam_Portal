@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 // import org.springframework.security.authentication.AuthenticationProvider;
 // import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -53,8 +54,9 @@ public class SecurityConfig {
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/auth/getRole").permitAll()
                         .requestMatchers("/api/auth/users").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/update", "/api/auth/updatePassword").hasAnyRole("ADMIN", "STUDENT", "EXAMINER")
+                        .requestMatchers("/api/auth/update", "/api/auth/updatePassword","/api/auth/getRole").hasAnyRole("ADMIN", "STUDENT", "EXAMINER")
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/examiner/**").hasRole("EXAMINER")

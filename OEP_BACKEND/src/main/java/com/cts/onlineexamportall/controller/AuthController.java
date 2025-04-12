@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,6 +30,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:4200") 
 public class AuthController {
 
     private static final Logger logger = LogManager.getLogger(AuthController.class);
@@ -45,25 +47,25 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Response<?>> loginUser(@Valid @RequestBody LoginRequestDTO request) {
         try {
-            logger.info("Attempting to log in user: {}", request.getUserName());
-            if (!userService.userExists(request.getUserName())) {
+            logger.info("Attempting to log in user: {}", request.getUsername());
+            if (!userService.userExists(request.getUsername())) {
                 throw new UserNotFoundException("User does not exist!");
             }
 
-            if (!userService.passwordMatch(request.getUserName(), request.getPassword())) {
+            if (!userService.passwordMatch(request.getUsername(), request.getPassword())) {
                 throw new PasswordMisMatchException("Entered password is incorrect");
             }
 
-            String token = userService.verify(request.getUserName(), request.getPassword());
+            String token = userService.verify(request.getUsername(), request.getPassword());
             Response<String> response = new Response<>(true, HttpStatus.OK, token, null);
-            logger.info("User logged in successfully: {}", request.getUserName());
+            logger.info("User logged in successfully: {}", request.getUsername());
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (UserNotFoundException e) {
-            logger.error("Login failed for user: {}. Reason: {}", request.getUserName(), e.getMessage());
+            logger.error("Login failed for user: {}. Reason: {}", request.getUsername(), e.getMessage());
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (PasswordMisMatchException ex) {
-            logger.error("Password mismatch for user: {}. Reason: {}", request.getUserName(), ex.getMessage());
+            logger.error("Password mismatch for user: {}. Reason: {}", request.getUsername(), ex.getMessage());
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
@@ -136,5 +138,18 @@ public class AuthController {
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/getRole")
+    public ResponseEntity<Response<?>> getRole(@RequestParam String username) {
+            logger.info("Fetching role for user: {}", username);
+            if (!userService.userExists(username)) {
+                throw new UserNotFoundException("User does not exist!");
+            }
+
+            String role = userService.getRole(username);
+            Response<String> response = new Response<>(true, HttpStatus.OK, role, null);
+            logger.info("Fetched role successfully for user: {}", username);
+            return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

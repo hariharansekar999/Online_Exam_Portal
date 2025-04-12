@@ -1,41 +1,66 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { LoginRequest } from '../../model/interfaces/login-request';
+import { AuthService } from '../../services/auth/auth.service';
 import { HeaderComponent } from '../header/header.component';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule,FormsModule,HeaderComponent],
+  standalone: true,
+  imports: [FormsModule, CommonModule, HeaderComponent, RouterModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  isLoading: boolean = true; // Initially set to true to show the spinner
-  loginData = { username: '', password: '', role: '' };
+  isLoading: boolean = true;
+  credentials: LoginRequest = { username: '', password: '' };
   errorMessage: string = '';
+
+  constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
     setTimeout(() => {
-      this.isLoading = false; // Set to false after the initial page content is loaded
-    }, 900); // Adjust the delay as needed
+      this.isLoading = false;
+    }, 1000);
   }
 
-  login() :void {
-    this.isLoading = true; // Show the spinner when login is initiated
-    // Simulate a login request
-    setTimeout(() => {
-      if (this.loginData.username === 'admin' && this.loginData.password === 'admin' && this.loginData.role === 'ADMIN') {
-        // Successful login
-        this.errorMessage = '';
-        this.isLoading = false; // Hide the spinner after login
-        alert('Login successful!'); // Replace with actual navigation logic
-      } else {
-        // Failed login
-        this.errorMessage = 'Invalid username or password';
-        this.isLoading = false; // Hide the spinner after login attempt
-        alert(this.errorMessage); // Replace with actual error handling logic
+  login(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.authService.login(this.credentials).pipe(
+      switchMap((response) => {
+        console.log('Login successful', response);
+        this.isLoading = false;
+        return this.authService.fetchUserRole(); // Fetch role after login
+      })
+    ).subscribe({
+      next: (roleResponse) => {
+        const role = roleResponse.data; // The role is in the 'data' field
+        console.log('User role:', role);
+        if (role === '[ADMIN]') {
+          this.router.navigate(['/admin']);
+        } else if (role === 'EXAMINER') {
+          this.router.navigate(['/examiner']);
+        } else if (role === 'STUDENT') {
+          this.router.navigate(['/student']);
+        } else {
+          console.warn('Unknown role:', role);
+          this.router.navigate(['/dashboard']);
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Login failed or fetching role failed', error);
+        if (error.error && error.error.message) {
+          this.errorMessage = error.error.message;
+        } else {
+          this.errorMessage = 'Login failed. Please check your credentials.';
+        }
       }
-    }, 2000); // Simulate a 2-second delay for the login request
+    });
   }
-  
 }
