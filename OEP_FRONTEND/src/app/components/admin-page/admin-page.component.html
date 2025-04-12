@@ -7,8 +7,8 @@
             <strong>Admin</strong>
           </a>
           <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end">
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <!-- <li><a class="dropdown-item" href="#">Settings</a></li> -->
+            <li><a class="dropdown-item" (click)="selectOption('profileUpdate')">Profile</a></li>
             <li>
               <hr class="dropdown-divider">
             </li>
@@ -60,6 +60,10 @@
       </div>
   
       <div class="flex-grow-1 p-3 overflow-auto" style="max-height: calc(100vh - 56px - 60px);">
+        <div *ngIf="!selectedOption" class="text-center mt-3 p-4">
+            <h4 class="fw-bold text-success">Your functionalities are right AWAY!!</h4>
+            <p>Select a Menu Item to Access the services</p>
+          </div>
         <div *ngIf="selectedOption === 'users'">
           <h3 class="text-italic">Users</h3>
           <p class="badge bg-success text-wrap">List of all registered users.</p>
@@ -70,7 +74,8 @@
                   <th class="text-success">ID</th>
                   <th class="text-success">Username</th>
                   <th class="text-success">Email</th>
-                  <th class="text-success">Role(s)</th>
+                  <th class="text-success">Role</th>
+                  <th class="text-success">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,6 +87,11 @@
                     <ul class="list-unstyled">
                       <li *ngFor="let role of user.roles" class="badge bg-secondary me-1">{{ role }}</li>
                     </ul>
+                  </td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" (click)="deleteUser(user.userName)">
+                      <i class="bi bi-trash-fill me-1"></i> Delete
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -153,14 +163,42 @@
             </div>
           </div>
         </div>
+            <div *ngIf="selectedOption === 'profileUpdate'" class="container mt-3">
+              <h4 class="mb-2">Update Profile</h4>
+              <p class="badge bg-success text-wrap">Change your password.</p>
+            </div>
         <div *ngIf="selectedOption === 'reports'">
-          <h3>Reports</h3>
-          <p>Content for the Reports section.</p>
-        </div>
-        <div *ngIf="!selectedOption">
-          <h3>Dashboard Overview</h3>
-          <p>Select an option from the sidebar to view details.</p>
-        </div>
+            <h3>Reports</h3>
+            <p class="badge bg-success text-wrap">List of exam reports.</p>
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
+                  <tr>
+                    <th class="text-success">Report ID</th>
+                    <th class="text-success">User Name</th>
+                    <th class="text-success">Exam ID</th>
+                    <th class="text-success">Correct Answers</th>
+                    <th class="text-success">Total Questions</th>
+                    <th class="text-success">Score</th>
+                    <th class="text-success">Percentage</th>
+                    <th class="text-success">Feedback</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let report of reports">
+                    <td>{{ report.reportId }}</td>
+                    <td>{{ report.userName }}</td>
+                    <td>{{ report.examId }}</td>
+                    <td>{{ report.correctAnswers }}</td>
+                    <td>{{ report.totalQuestions }}</td>
+                    <td>{{ report.score }}</td>
+                    <td>{{ report.percentage }}</td>
+                    <td>{{ report.feedback }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
       </div>
     </div>
   </div>

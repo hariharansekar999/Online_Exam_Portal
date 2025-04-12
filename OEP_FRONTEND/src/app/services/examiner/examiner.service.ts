@@ -3,11 +3,19 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Exam } from '../../model/interfaces/exam'; // Adjust the path
 
-interface ApiResponse {
+
+interface ApiResponse<T> {
   success: boolean;
   status: string;
-  data: any[]; // Change 'Exam[]' to 'any[]' initially
+  data: T | null;
   errorMessage: string | null;
+}
+
+interface ExamDTO {
+  title: string;
+  description?: string;
+  totalMarks: number | null;
+  duration: number | null;
 }
 
 @Injectable({
@@ -29,4 +37,11 @@ export class ExaminerService {
     );
   }
 
+  createExam(category: string, examDTO: ExamDTO): Observable<ApiResponse<Exam>> {
+    return this.http.post<ApiResponse<Exam>>(`${this.baseUrl}/createExam/${category}`, examDTO);
+  }
+
+  deleteExam(examId: number): Observable<ApiResponse<Exam>> {
+    return this.http.delete<ApiResponse<Exam>>(`${this.baseUrl}/deleteExam/${examId}`);
+  }
 }

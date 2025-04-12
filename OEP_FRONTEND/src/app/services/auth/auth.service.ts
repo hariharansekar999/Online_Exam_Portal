@@ -16,7 +16,6 @@ interface UserRequest {
   role: 'EXAMINER' | 'ADMIN' | 'STUDENT';
   password: string;
 }
-
 interface RegistrationResponse {
   success: boolean;
   status: string;
@@ -28,7 +27,6 @@ interface RegistrationResponse {
   };
   errorMessage: string | null;
 }
-
 interface UserRoleResponse {
   data: string; // The role will be in the 'data' field of your Response
   statusCode: number;

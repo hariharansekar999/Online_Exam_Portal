@@ -183,11 +183,9 @@ public class ExaminerController {
     @DeleteMapping("/deleteExam/{examId}")
     public ResponseEntity<Response<?>> deleteExam(@PathVariable long examId){
         try{
-            if( !examService.examExists(examId)){
-                throw new ExamNotFoundException("The exam with id "+ examId + "does not exists");
-            }
- 
+            System.out.println("Exam with id "+ examId + " deletetion in progress");
             examService.deleteExam(examId);
+            System.out.println("Exam with id "+ examId + " deleted successfully");
             Response<String> response = new Response<>(false, HttpStatus.OK, "Exam deleted successfully!", null);
 			return new ResponseEntity<>(response, HttpStatus.OK);
         }
