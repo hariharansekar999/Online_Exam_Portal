@@ -53,13 +53,16 @@ public class SecurityConfig {
         return http
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/auth/getRole").permitAll()
-                        .requestMatchers("/api/auth/users").hasRole("ADMIN")
+                        .requestMatchers( "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/users","/api/auth/register").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.OPTIONS, "/admin/**").permitAll()
                         .requestMatchers("/api/auth/update", "/api/auth/updatePassword","/api/auth/getRole").hasAnyRole("ADMIN", "STUDENT", "EXAMINER")
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/examiner/**").hasRole("EXAMINER")
+                        .requestMatchers(HttpMethod.OPTIONS,"/examiner/**").permitAll()
+                        .requestMatchers("/examiner/**").hasAnyRole("EXAMINER","ADMIN")
+                        // .requestMatchers("/examiner/allExams").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->

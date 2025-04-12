@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth/auth.service'; // Import your AuthService
+import { CanActivate, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
+import { Observable, map, tap } from 'rxjs';
+import { AuthService } from '../services/auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,20 +10,37 @@ export class AuthGuard implements CanActivate {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate():
+  canActivate(route: ActivatedRouteSnapshot):
     | Observable<boolean | UrlTree>
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    if (this.authService.isAuthenticated()) {
-      return true; // User is logged in, allow access to the route
-    } else {
-      // User is not logged in, redirect to the login page
-      alert('Please log in to access this page.'); // Optional alert
-      return this.router.parseUrl('/login'); // Redirect to the login route
-      // Alternatively, you could navigate directly:
-      // this.router.navigate(['/login']);
-      // return false;
+    if (!this.authService.isAuthenticated()) {
+      alert('Please log in to access this page.');
+      return this.router.parseUrl('/login');
     }
+
+    const requiredRole = route.data['roles'] as string[];
+
+    return this.authService.fetchUserRole().pipe(
+      tap(response => console.log('AuthGuard - User Role Response:', response)), // Log the entire response
+      map(response => {
+        const userRole = response.data; // Access the 'data' property
+        const userRoleString = userRole ? userRole.toString() : null;
+        console.log('AuthGuard - Required Role:', requiredRole);
+        console.log('AuthGuard - User Role (extracted):', userRoleString);
+
+        if (requiredRole && userRoleString) {
+          if (requiredRole.includes(userRoleString)) {
+            console.log('AuthGuard - Authorized');
+            return true;
+          } else {
+            alert('You are not authorized to access this route.');
+            return this.router.parseUrl('/');
+          }
+        }
+        return true; 
+      })
+    );
   }
 }

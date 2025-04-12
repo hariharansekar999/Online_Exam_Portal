@@ -10,6 +10,25 @@ interface JwtPayloadWithRole extends JwtPayload {
   sub?: string; // Assuming your JWT contains username ('sub' is common)
 }
 
+interface UserRequest {
+  userName: string;
+  email: string;
+  role: 'EXAMINER' | 'ADMIN' | 'STUDENT';
+  password: string;
+}
+
+interface RegistrationResponse {
+  success: boolean;
+  status: string;
+  data: { // Adjust the 'data' structure based on your needs
+    userId: string;
+    userName: string;
+    email: string;
+    roles: string[];
+  };
+  errorMessage: string | null;
+}
+
 interface UserRoleResponse {
   data: string; // The role will be in the 'data' field of your Response
   statusCode: number;
@@ -37,6 +56,11 @@ export class AuthService {
       })
     );
   }
+
+  registerUser(userRequest: UserRequest): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(this.baseUrl + '/register', userRequest);
+  }
+
 
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
