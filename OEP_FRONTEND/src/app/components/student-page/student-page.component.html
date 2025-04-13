@@ -1,1 +1,125 @@
-<p>student-page works!</p>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand">Online Exam Portal</a>
+      <div class="d-flex ms-auto">
+        <div class="dropdown">
+          <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <strong>{{ loggedInUsername || 'Student' }}</strong>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end">
+            <li>
+              <a class="dropdown-item" [class.active]="selectedOption === 'profile'" (click)="selectOption('profile')">
+                <i class="bi bi-person-circle me-2"></i>
+                Profile
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <div class="text-center">
+              <button class="btn btn-danger border text-white px-2 py-2" (click)="logout()">Logout</button>
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+</nav>
+
+
+  <div class="d-flex flex-nowrap bg-light mt-5 vh-100">
+    <!-- Sidebar -->
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 280px;">
+      <div class="mb-3 p-2">
+        <h4 class="fw-bold text-success">Hey {{ loggedInUsername || 'Student' }}!!</h4>
+        <h6 class="text-white">Explore available exams below!</h6>
+      </div>
+  
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a class="nav-link text-white" aria-current="page" [class.active]="selectedOption === 'availableExams'" (click)="selectOption('availableExams')">
+            <i class="bi bi-journals me-2"></i>
+            Exams
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" [class.active]="selectedOption === 'attendExam'" (click)="selectOption('attendExam')">
+            <i class="bi bi-play-circle-fill me-2"></i>
+            Attend Exam
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" [class.active]="selectedOption === 'viewReport'" (click)="selectOption('viewReport')">
+            <i class="bi bi-file-earmark-text-fill me-2"></i>
+            Get Report
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" [class.active]="selectedOption === 'leaderboard'" (click)="selectOption('leaderboard')">
+            <i class="bi bi-trophy-fill me-2"></i>
+            View Leaderboard
+          </a>
+        </li>
+      </ul>
+      <hr class="text-secondary">
+    </div>
+
+    <!-- Content Area -->
+    <main class="flex-grow-1 p-3 overflow-auto bg-light">
+      <div *ngIf="selectedOption === 'availableExams'">
+        <h3 class="mb-4">Available Exams</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          <div class="col" *ngFor="let exam of availableExams">
+            <div class="card h-100 shadow-sm border-primary">
+              <div class="card-body p-3">
+                <h5 class="card-title text-primary">{{ exam.title }}</h5>
+                <p class="card-text text-muted small">{{ exam.description || 'No description available.' }}</p>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted small">Marks: {{ exam.totalMarks }}</span>
+                  <span class="text-muted small">Duration: {{ exam.duration }} mins</span>
+                </div>
+                <div class="mt-2 text-center">
+                  <button type="button" class="btn btn-sm btn-primary w-100" [routerLink]="['/student/attend-exam', exam.examId]">Attend Exam</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="availableExams.length === 0" class="col-12">
+            <p class="lead text-muted">No exams are currently available.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Content -->
+      <div *ngIf="selectedOption === 'attendExam'">
+        <h3 class="mb-4">Attend Exam</h3>
+        <p class="lead">This section will allow you to attend exams.</p>
+      </div>
+      <div *ngIf="selectedOption === 'profile' && userProfile">
+        <h3 class="mb-4">User Profile</h3>
+        <div class="card shadow-sm border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary">{{ userProfile.userName }}</h5>
+            <p class="card-text"><strong>Email:</strong> {{ userProfile.email }}</p>
+            <p class="card-text"><strong>Roles:</strong> {{ userProfile.roles.join(', ') }}</p>
+            <p class="card-text"><strong>User ID:</strong> {{ userProfile.userId }}</p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="selectedOption === 'profile' && !userProfile">
+        <p class="lead text-muted">Loading profile information...</p>
+      </div>
+      <div *ngIf="selectedOption === 'viewReport'">
+        <h3 class="mb-4">Get Report</h3>
+        <p class="lead">Here you will be able to get your exam reports.</p>
+      </div>
+      <div *ngIf="selectedOption === 'leaderboard'">
+        <h3 class="mb-4">View Leaderboard</h3>
+        <p class="lead">Check the leaderboard to see how you rank among other students.</p>
+      </div>
+      <div *ngIf="!selectedOption || selectedOption === 'dashboard'">
+        <h3 class="mb-4">Student Dashboard</h3>
+        <p class="lead">Welcome to your student portal!</p>
+        <p>Use the sidebar to navigate to different sections.</p>
+      </div>
+    </main>
+  </div>

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cts.onlineexamportall.dto.ExamResponseDTO;
@@ -16,11 +17,14 @@ import com.cts.onlineexamportall.exception.DuplicateAttemptException;
 import com.cts.onlineexamportall.exception.ExamNotFoundException;
 import com.cts.onlineexamportall.exception.PasswordMisMatchException;
 import com.cts.onlineexamportall.exception.UserNotFoundException;
+import com.cts.onlineexamportall.model.Exam;
 import com.cts.onlineexamportall.model.Report;
 import com.cts.onlineexamportall.model.User;
 import com.cts.onlineexamportall.service.ExamService;
 import com.cts.onlineexamportall.service.ReportService;
 import com.cts.onlineexamportall.service.UserService;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/student")
+@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.DELETE})
 public class StudentController {
 
     private static final Logger logger = LogManager.getLogger(StudentController.class);
@@ -85,6 +90,18 @@ public class StudentController {
             logger.error("Duplicate attempt for examId: {} and username: {}. Reason: {}", responseDTO.getExamId(), responseDTO.getUserName(), e.getMessage());
             Response<String> response = new Response<>(false, HttpStatus.CONFLICT, "Error submitting the response", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+    }
+
+    @GetMapping("/getExams")
+    public ResponseEntity<Response<?>> getExams() {
+        try {
+            List<Exam> exams = examService.getAllExams();
+            Response<List<Exam>> response = new Response<>(true, HttpStatus.OK, exams, null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 

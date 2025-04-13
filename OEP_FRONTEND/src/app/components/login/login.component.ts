@@ -45,11 +45,11 @@ export class LoginComponent implements OnInit {
           this.router.navigate(['/admin']);
         } else if (role === '[EXAMINER]') {
           this.router.navigate(['/examiner']);
-        } else if (role === 'STUDENT') {
+        } else if (role === '[STUDENT]') {
           this.router.navigate(['/student']);
         } else {
           console.warn('Unknown role:', role);
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/login']);
         }
       },
       error: (error) => {
