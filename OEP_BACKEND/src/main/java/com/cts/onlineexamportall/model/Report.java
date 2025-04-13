@@ -16,6 +16,7 @@ public class Report {
     private long reportId;
 
     // @JoinColumn(name = "user_name", referencedColumnName = "userName", insertable = false, updatable = false)
+    // @Column(name = "user_name")
     private String userName;
 
     private long examId;

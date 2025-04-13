@@ -286,6 +286,10 @@ public class ExamService {
         }
     }
 
+    public Exam getExamById(long examId) {
+        return examDAO.getReferenceById(examId);
+    }
+
     
 
    

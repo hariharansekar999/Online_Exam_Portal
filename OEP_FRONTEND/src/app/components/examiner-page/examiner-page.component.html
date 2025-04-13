@@ -50,9 +50,41 @@
           </a>
         </li>
         <li>
+          <a class="nav-link text-white" [class.active]="selectedOption === 'viewQuestions'" (click)="selectOption('viewQuestions')">
+            <i class="bi bi-list-check me-2"></i>
+            View Questions
+          </a>
+        </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" [class.active]="selectedOption === 'updateData'" (click)="selectOption('updateData')">
+                <i class="bi bi-cloud-upload-fill"></i>
+                Update Data
+              </a>
+            </li>
+            <div *ngIf="selectedOption === 'updateData'" class="ms-3">
+              <li>
+                <a class="nav-link text-white small" [class.active]="showUpdateExamForm" (click)="selectOption('updateExamForm')">
+                  <i class="bi bi-arrow-up-square-fill me-1"></i>
+                  Update Exam
+                </a>
+              </li>
+              <li>
+                <a class="nav-link text-white small" [class.active]="showUpdateQuestionForm" (click)="selectOption('updateQuestionForm')">
+                  <i class="bi bi-arrow-up-square-fill me-1"></i>
+                  Update Question
+                </a>
+              </li>
+            </div>
+        <li>
           <a class="nav-link text-white" [class.active]="selectedOption === 'evaluateExams'" (click)="selectOption('evaluateExams')">
             <i class="bi bi-pencil-square me-2"></i>
             Evaluate Exams
+          </a>
+        </li>
+        <li>
+          <a class="nav-link text-white" [class.active]="selectedOption === 'viewReports'" (click)="showAllReports()">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            View Reports
           </a>
         </li>
       </ul>
@@ -84,9 +116,7 @@
                     <td>{{ exam.totalMarks }}</td>
                     <td>{{ exam.duration }}</td>
                     <td>
-                      <button class="btn btn-danger btn-sm" (click)="delet
-                      
-                      eExam(exam.examId)">
+                      <button class="btn btn-danger btn-sm" (click)="deleteExam(exam.examId)">
                         <i class="bi bi-trash-fill me-1"></i> Delete
                       </button>
                     </td>
@@ -153,17 +183,451 @@
         </div>
       </div>
   
-      <div *ngIf="selectedOption === 'createQuestions'">
+      <div *ngIf="selectedOption === 'createQuestions'" class="container mt-4">
         <h3>Create Questions</h3>
         <p class="badge bg-success text-wrap">Design new questions for your exams.</p>
-        <p>This section will contain the form for creating questions.</p>
+      
+        <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+      
+        <div class="mb-3">
+          <button class="btn btn-primary me-2 btn-sm" (click)="showCreateSingleQuestionForm()">
+            <i class="bi bi-plus-circle me-1"></i> Single Question
+          </button>
+          <button class="btn btn-info me-2 btn-sm" (click)="showCreateMultipleQuestionsForm()">
+            <i class="bi bi-collection-plus me-1"></i> Multiple Questions
+          </button>
+          <button class="btn btn-warning btn-sm" (click)="showCreateByCategoryForm()">
+            <i class="bi bi-folder-plus me-1"></i> By Category
+          </button>
+        </div>
+      
+        <div *ngIf="showSingleQuestionForm" class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h4><i class="bi bi-plus-circle me-2"></i> Create Single Question</h4>
+            <form #singleQuestionForm="ngForm" (ngSubmit)="createSingleQuestion()">
+              <div class="mb-2">
+                <label for="descriptionSingle" class="form-label small fw-bold">Description</label>
+                <textarea class="form-control form-control-sm" id="descriptionSingle" name="description" [(ngModel)]="newQuestion.description" rows="2" required></textarea>
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <div class="mb-2">
+                    <label for="categorySingle" class="form-label small fw-bold">Category</label>
+                    <input type="text" class="form-control form-control-sm" id="categorySingle" name="category" [(ngModel)]="newQuestion.category" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-2">
+                    <label for="difficultySingle" class="form-label small fw-bold">Difficulty</label>
+                    <select class="form-select form-select-sm" id="difficultySingle" name="difficulty" [(ngModel)]="newQuestion.difficulty" required>
+                      <option value="" disabled>Select</option>
+                      <option value="Easy">Easy</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <label for="correctAnswerSingle" class="form-label small fw-bold">Correct Answer</label>
+                <input type="text" class="form-control form-control-sm" id="correctAnswerSingle" name="correctAnswer" [(ngModel)]="newQuestion.correctAnswer" required>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary btn-sm" [disabled]="singleQuestionForm.invalid">
+                  <i class="bi bi-check-circle me-1"></i> Create
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="showCreateSingleQuestionForm(false)">
+                  <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      
+        <div *ngIf="showMultipleQuestionsForm" class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h4><i class="bi bi-collection-plus me-2"></i> Create Multiple Questions</h4>
+            <div class="mb-3" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+              <div *ngFor="let question of multipleQuestions; let i = index" class="mb-2 border-bottom pb-2 small d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>Question {{ i + 1 }}</h6>
+                  <p class="mb-1"><strong>Description:</strong> {{ question.description }}</p>
+                  <p class="mb-1"><strong>Category:</strong> {{ question.category }}</p>
+                  <p class="mb-1"><strong>Difficulty:</strong> {{ question.difficulty }}</p>
+                  <p class="mb-0"><strong>Correct Answer:</strong> {{ question.correctAnswer }}</p>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" (click)="removeMultipleQuestion(i)">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </div>
+            <h6 class="mt-3"><i class="bi bi-plus-square me-1"></i> Add New Question</h6>
+            <form #multipleQuestionForm="ngForm" (ngSubmit)="addMultipleQuestion()" class="mb-3">
+              <div class="mb-2">
+                <label for="descriptionMultiple" class="form-label small fw-bold">Description</label>
+                <textarea class="form-control form-control-sm" id="descriptionMultiple" name="description" [(ngModel)]="currentMultipleQuestion.description" rows="2" required></textarea>
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <div class="mb-2">
+                    <label for="difficultyMultiple" class="form-label small fw-bold">Difficulty</label>
+                    <select class="form-select form-select-sm" id="difficultyMultiple" name="difficulty" [(ngModel)]="currentMultipleQuestion.difficulty" required>
+                      <option value="" disabled>Select</option>
+                      <option value="Easy">Easy</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-2">
+                    <label for="categoryMultiple" class="form-label small fw-bold">Category</label>
+                    <input type="text" class="form-control form-control-sm" id="categoryMultiple" name="category" [(ngModel)]="currentMultipleQuestion.category" required>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <label for="correctAnswerMultiple" class="form-label small fw-bold">Correct Answer</label>
+                <input type="text" class="form-control form-control-sm" id="correctAnswerMultiple" name="correctAnswer" [(ngModel)]="currentMultipleQuestion.correctAnswer" required>
+              </div>
+              <button type="submit" class="btn btn-secondary btn-sm">
+                <i class="bi bi-plus me-1"></i> Add
+              </button>
+            </form>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-success btn-sm" (click)="createMultipleQuestions()" [disabled]="multipleQuestions.length === 0">
+                <i class="bi bi-check-all me-1"></i> Create All
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="showCreateMultipleQuestionsForm(false)">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      
+        <div *ngIf="isShowCreateByCategoryForm" class="card shadow-sm">
+          <div class="card-body">
+            <h4><i class="bi bi-folder-plus me-2"></i> Create Questions by Category</h4>
+            <div class="mb-2">
+              <label for="selectedCategory" class="form-label small fw-bold">Category</label>
+              <input type="text" class="form-control form-control-sm" id="selectedCategory" name="selectedCategory" [(ngModel)]="selectedCategoryForQuestions" required>
+            </div>
+            <div class="mb-3" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+              <div *ngFor="let question of categoryQuestions; let i = index" class="mb-2 border-bottom pb-2 small d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>Question {{ i + 1 }}</h6>
+                  <p class="mb-1"><strong>Description:</strong> {{ question.description }}</p>
+                  <p class="mb-1"><strong>Difficulty:</strong> {{ question.difficulty }}</p>
+                  <p class="mb-0"><strong>Correct Answer:</strong> {{ question.correctAnswer }}</p>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" (click)="removeCategoryQuestion(i)">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </div>
+            <h6 class="mt-3"><i class="bi bi-plus-square me-1"></i> Add New Question to Category "{{ selectedCategoryForQuestions }}"</h6>
+            <form #categoryQuestionForm="ngForm" (ngSubmit)="addCategoryQuestion()" class="mb-3">
+              <div class="mb-2">
+                <label for="descriptionCategory" class="form-label small fw-bold">Description</label>
+                <textarea class="form-control form-control-sm" id="descriptionCategory" name="description" [(ngModel)]="currentCategoryQuestion.description" rows="2" required></textarea>
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <div class="mb-2">
+                    <label for="difficultyCategory" class="form-label small fw-bold">Difficulty</label>
+                    <select class="form-select form-select-sm" id="difficultyCategory" name="difficulty" [(ngModel)]="currentCategoryQuestion.difficulty" required>
+                      <option value="" disabled>Select</option>
+                      <option value="Easy">Easy</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <label for="correctAnswerCategory" class="form-label small fw-bold">Correct Answer</label>
+                <input type="text" class="form-control form-control-sm" id="correctAnswerCategory" name="correctAnswer" [(ngModel)]="currentCategoryQuestion.correctAnswer" required>
+              </div>
+              <button type="submit" class="btn btn-secondary btn-sm">
+                <i class="bi bi-plus me-1"></i> Add
+              </button>
+            </form>
+            <div class="d-flex justify-content-end mt-3">
+              <button class="btn btn-success btn-sm" (click)="createByCategory()" [disabled]="categoryQuestions.length === 0 || !selectedCategoryForQuestions">
+                <i class="bi bi-check-all me-1"></i> Create All
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="showCreateByCategoryForm(false)">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-  
-      <div *ngIf="selectedOption === 'evaluateExams'">
-        <h3>Evaluate Exams</h3>
-        <p class="badge bg-success text-wrap">Review and grade submitted exams.</p>
-        <p>This section will contain the tools for evaluating exams.</p>
+
+      <div *ngIf="selectedOption === 'viewQuestions'">
+        <h3>All Questions</h3>
+        <p class="badge bg-info text-wrap">A list of all questions in the database.</p>
+      
+        <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+      
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-striped table-bordered table-hover">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col" class="text-success">ID</th>
+                <th scope="col" class="text-success">Description</th>
+                <th scope="col" class="text-success">Category</th>
+                <th scope="col" class="text-success">Difficulty</th>
+                <th scope="col" class="text-success">Correct Answer</th>
+                <th scope="col" class="text-success">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let question of allQuestions">
+                <td>{{ question.questionId }}</td>
+                <td>{{ question.description }}</td>
+                <td>{{ question.category }}</td>
+                <td>{{ question.difficulty }}</td>
+                <td>{{ question.correctAnswer }}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm" (click)="deleteQuestion(question.questionId)">
+                    <i class="bi bi-trash-fill me-1"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="allQuestions.length === 0" class="text-muted">No questions available in the database.</p>
+        </div>
       </div>
+
+      <div *ngIf="selectedOption === 'updateData'" class="text-center p-3">
+      <h3 class="fw-bold">Update Data</h3>
+      <p class="badge bg-success text-wrap">Update existing exam or question data.</p>
+      </div>
+      <div *ngIf="showUpdateExamForm">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h4><i class="bi bi-arrow-up-square-fill me-2"></i> Update Exam</h4>
+          <div class="mb-3">
+            <label for="selectExam" class="form-label small fw-bold">Select Exam to Update</label>
+            <select class="form-select form-select-sm" id="selectExam" [(ngModel)]="selectedExamIdForUpdate" required>
+              <option value="" disabled>Select an Exam</option>
+              <option *ngFor="let exam of exams" [value]="exam.examId">{{ exam.title }} (ID: {{ exam.examId }})</option>
+            </select>
+          </div>
+          <form *ngIf="selectedExamIdForUpdate" #updateExamForm="ngForm" (ngSubmit)="updateExam()">
+            <div class="mb-2">
+              <label for="titleUpdateExam" class="form-label small fw-bold">Title</label>
+              <input type="text" class="form-control form-control-sm" id="titleUpdateExam" name="title" [(ngModel)]="updateExamData.title" required>
+            </div>
+            <div class="mb-2">
+              <label for="descriptionUpdateExam" class="form-label small fw-bold">Description (Optional)</label>
+              <textarea class="form-control form-control-sm" id="descriptionUpdateExam" name="description" [(ngModel)]="updateExamData.description" rows="2"></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <div class="mb-2">
+                  <label for="totalMarksUpdateExam" class="form-label small fw-bold">Total Marks</label>
+                  <input type="number" class="form-control form-control-sm" id="totalMarksUpdateExam" name="totalMarks" [(ngModel)]="updateExamData.totalMarks">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-2">
+                  <label for="durationUpdateExam" class="form-label small fw-bold">Duration (minutes)</label>
+                  <input type="number" class="form-control form-control-sm" id="durationUpdateExam" name="duration" [(ngModel)]="updateExamData.duration">
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+              <button type="submit" class="btn btn-primary btn-sm" [disabled]="updateExamForm.invalid || !selectedExamIdForUpdate">
+                <i class="bi bi-save me-1"></i> Update Exam
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="showUpdateExamForm = false; selectedOption = 'updateData'">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showUpdateQuestionForm">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h4><i class="bi bi-arrow-up-square-fill me-2"></i> Update Question</h4>
+          <div class="mb-3">
+            <label for="selectQuestion" class="form-label small fw-bold">Select Question to Update</label>
+            <select class="form-select form-select-sm" id="selectQuestion" [(ngModel)]="selectedQuestionIdForUpdate" required>
+              <option value="" disabled>Select a Question</option>
+              <option *ngFor="let question of allQuestions" [value]="question.questionId">{{ question.description | slice:0:50 }}... (ID: {{ question.questionId }})</option>
+            </select>
+          </div>
+          <form *ngIf="selectedQuestionIdForUpdate" #updateQuestionForm="ngForm" (ngSubmit)="updateQuestion()">
+            <div class="mb-2">
+              <label for="descriptionUpdateQuestion" class="form-label small fw-bold">Description</label>
+              <textarea class="form-control form-control-sm" id="descriptionUpdateQuestion" name="description" [(ngModel)]="updateQuestionData.description" rows="2" required></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <div class="mb-2">
+                  <label for="categoryUpdateQuestion" class="form-label small fw-bold">Category</label>
+                  <input type="text" class="form-control form-control-sm" id="categoryUpdateQuestion" name="category" [(ngModel)]="updateQuestionData.category" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-2">
+                  <label for="difficultyUpdateQuestion" class="form-label small fw-bold">Difficulty</label>
+                  <select class="form-select form-select-sm" id="difficultyUpdateQuestion" name="difficulty" [(ngModel)]="updateQuestionData.difficulty" required>
+                    <option value="" disabled>Select</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="mb-2">
+              <label for="correctAnswerUpdateQuestion" class="form-label small fw-bold">Correct Answer</label>
+              <input type="text" class="form-control form-control-sm" id="correctAnswerUpdateQuestion" name="correctAnswer" [(ngModel)]="updateQuestionData.correctAnswer" required>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+              <button type="submit" class="btn btn-primary btn-sm" [disabled]="updateQuestionForm.invalid || !selectedQuestionIdForUpdate">
+                <i class="bi bi-save me-1"></i> Update Question
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="showUpdateQuestionForm = false; selectedOption = 'updateData'">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="updateExamMessage" class="modal fade show" id="updateExamModal" tabindex="-1" aria-labelledby="updateExamModalLabel" [ngStyle]="{ display: 'block' }">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header" [ngClass]="{'bg-success text-white': isUpdateExamSuccess, 'bg-danger text-white': !isUpdateExamSuccess}">
+            <h5 class="modal-title" id="updateExamModalLabel">{{ isUpdateExamSuccess ? 'Success' : 'Error' }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="closeUpdateExamModal()"></button>
+          </div>
+          <div class="modal-body">
+            {{ updateExamMessage }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeUpdateExamModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="updateQuestionMessage" class="modal fade show" id="updateQuestionModal" tabindex="-1" aria-labelledby="updateQuestionModalLabel" [ngStyle]="{ display: 'block' }">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header" [ngClass]="{'bg-success text-white': isUpdateQuestionSuccess, 'bg-danger text-white': !isUpdateQuestionSuccess}">
+            <h5 class="modal-title" id="updateQuestionModalLabel">{{ isUpdateQuestionSuccess ? 'Success' : 'Error' }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="closeUpdateQuestionModal()"></button>
+          </div>
+          <div class="modal-body">
+            {{ updateQuestionMessage }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeUpdateQuestionModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedOption === 'evaluateExams'">
+      <h3>Evaluate Exam Response</h3>
+      <p class="badge bg-info text-wrap">Evaluate a specific student's response for an exam.</p>
+    
+      <div class="mb-3">
+        <label for="evaluateExamId" class="form-label">Enter Exam ID:</label>
+        <input type="number" class="form-control" id="evaluateExamId" [(ngModel)]="selectedExamIdForEvaluation">
+      </div>
+    
+      <div class="mb-3">
+        <label for="evaluateUsername" class="form-label">Enter Username:</label>
+        <input type="text" class="form-control" id="evaluateUsername" [(ngModel)]="usernameToEvaluateSingle">
+      </div>
+    
+      <button class="btn btn-primary mb-3" (click)="evaluateSingleExam()">
+        <i class="bi bi-check-circle-fill me-1"></i> Evaluate Exam
+      </button>
+    
+      <div *ngIf="singleEvaluationResult">
+        <h4>Evaluation Report:</h4>
+        <p><strong>User:</strong> {{ singleEvaluationResult.userName }}</p>
+        <p><strong>Exam ID:</strong> {{ singleEvaluationResult.examId }}</p>
+        <p><strong>Score:</strong> {{ singleEvaluationResult.score }} / {{ fetchedExam?.totalMarks }}</p>
+        <p><strong>Correct Answers:</strong> {{ singleEvaluationResult.correctAnswers }} / {{ singleEvaluationResult.totalQuestions }}</p>
+        <p><strong>Percentage:</strong> {{ singleEvaluationResult.percentage }}%</p>
+        <p><strong>Feedback:</strong> {{ singleEvaluationResult.feedback }}</p>
+        <pre *ngIf="false">{{ singleEvaluationResult | json }}</pre>
+      </div>
+    
+      <div *ngIf="evaluationMessage" class="mt-3 alert" [class.alert-success]="isEvaluationSuccess" [class.alert-danger]="isEvaluationSuccess === false">
+        {{ evaluationMessage }}
+      </div>
+    </div>
+      <div *ngIf="selectedOption === 'viewReports'">
+        <h3>All Evaluation Reports</h3>
+        <p class="badge bg-success text-wrap">List of all evaluation reports in the system.</p>
+        <div class="table-responsive">
+          <table class="table table-striped table-bordered table-hover" *ngIf="reports.length > 0">
+            <thead class="thead-dark">
+              <tr>
+                <th class="text-success">Report ID</th>
+                <th class="text-success">User</th>
+                <th class="text-success">Exam ID</th>
+                <th class="text-success">Score</th>
+                <th class="text-success">Percentage</th>
+                <th class="text-success">Feedback</th>
+                <th class="text-success">Options</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let report of reports">
+                <td>{{ report.reportId }}</td>
+                <td>{{ report.userName }}</td>
+                <td>{{ report.examId }}</td>
+                <td>{{ report.score }} / {{ report.totalQuestions }}</td>
+                <td>{{ report.percentage }}%</td>
+                <td>
+                  <span *ngIf="selectedReportForFeedback?.reportId !== report.reportId">{{ report.feedback }}</span>
+                  <textarea *ngIf="selectedReportForFeedback?.reportId === report.reportId"
+                            [(ngModel)]="feedbackToUpdate"
+                            placeholder="Update feedback"></textarea>
+                </td>
+                <td>
+                  <button class="btn btn-primary btn-sm me-2"
+                          *ngIf="selectedReportForFeedback?.reportId !== report.reportId"
+                          (click)="openUpdateFeedbackForm(report)">
+                    <i class="bi bi-pencil-fill me-1"></i> Update Feedback
+                  </button>
+                  <button class="btn btn-success btn-sm me-2"
+                          *ngIf="selectedReportForFeedback?.reportId === report.reportId"
+                          (click)="updateReportFeedback()">
+                    <i class="bi bi-save-fill me-1"></i> Save
+                  </button>
+                  <button class="btn btn-secondary btn-sm"
+                          *ngIf="selectedReportForFeedback?.reportId === report.reportId"
+                          (click)="selectedReportForFeedback = null; feedbackToUpdate = ''; updateFeedbackMessage = ''; isUpdateFeedbackSuccess = null;">
+                    <i class="bi bi-x-circle-fill me-1"></i> Cancel
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="reports.length === 0">No reports available.</p>
+          <div *ngIf="updateFeedbackMessage" class="mt-3 message"
+               [ngClass]="{'alert alert-success': isUpdateFeedbackSuccess === true, 'alert alert-danger': isUpdateFeedbackSuccess === false}"
+               role="alert">
+            {{ updateFeedbackMessage }}
+          </div>
+      </div>
+    </div>
   
       <div *ngIf="!selectedOption">
         <h3>Dashboard Overview</h3>

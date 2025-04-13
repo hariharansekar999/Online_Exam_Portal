@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Exam } from '../../model/interfaces/exam'; // Adjust the path
+import { Report } from '../../model/interfaces/report';
 
 
 interface ApiResponse<T> {
@@ -43,5 +44,18 @@ export class ExaminerService {
 
   deleteExam(examId: number): Observable<ApiResponse<Exam>> {
     return this.http.delete<ApiResponse<Exam>>(`${this.baseUrl}/deleteExam/${examId}`);
+  }
+
+  evaluateExam(examId: number, username: string): Observable<ApiResponse<Report>> {
+    return this.http.get<ApiResponse<Report>>(`${this.baseUrl}/evaluate/${examId}/${username}`);
+  }
+
+  getExamById(examId: number): Observable<ApiResponse<Exam>> {
+    return this.http.get<ApiResponse<Exam>>(`${this.baseUrl}/getExam/${examId}`);
+  }
+
+  // In examiner.service.ts
+  updateFeedback(username: string, examId: number, feedback: string): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/updateFeedback/${examId}/${username}`, feedback, { headers: { 'Content-Type': 'text/plain' } });
   }
 }

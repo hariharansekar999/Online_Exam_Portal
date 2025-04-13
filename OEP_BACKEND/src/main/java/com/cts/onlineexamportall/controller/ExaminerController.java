@@ -36,7 +36,7 @@ import com.cts.onlineexamportall.service.ReportService;
 
 @RestController
 @RequestMapping("/examiner")
-@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.PUT, RequestMethod.DELETE})
 public class ExaminerController {
 
 	// private static final Logger logger = LogManager.getLogger(StudentController.class);
@@ -163,7 +163,7 @@ public class ExaminerController {
         }
     }
  
-    @PutMapping("/updateExam")
+    @PutMapping("/updateExam/{examId}")
     public ResponseEntity<Response<?>> updateExam(@PathVariable long examId , @RequestBody ExamDTO examDTO){
         try{
             if( !examService.examExists(examId)){
@@ -172,6 +172,23 @@ public class ExaminerController {
  
             Exam exam = examService.updateExam(examId, examDTO);
             Response<Exam> response = new Response<Exam>(true, HttpStatus.ACCEPTED, exam, null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch(ExamNotFoundException ex){
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getExam/{examId}")
+    public ResponseEntity<Response<?>> getExamById(@PathVariable long examId){
+        try{
+            if( !examService.examExists(examId)){
+                throw new ExamNotFoundException("The exam with id "+ examId + "does not exists");
+            }
+ 
+            Exam exam = examService.getExamById(examId);
+            Response<Exam> response = new Response<Exam>(true, HttpStatus.OK, exam, null);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         catch(ExamNotFoundException ex){
@@ -251,6 +268,19 @@ public class ExaminerController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    // @DeleteMapping("/deleteReport/{examId}/{username}")
+    // public ResponseEntity<Response<?>> deleteReport(@PathVariable long examId, @PathVariable String username) {
+    //     try {
+    //         reportService.deleteReport(username, examId);
+    //         Response<String> response = new Response<>(true, HttpStatus.OK, "Report deleted successfully!", null);
+    //         return new ResponseEntity<>(response, HttpStatus.OK);
+    //     } 
+    //     catch (ReportNotFoundException ex) {
+    //         Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
+    //         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    //     }
+    // }
  
       
 
