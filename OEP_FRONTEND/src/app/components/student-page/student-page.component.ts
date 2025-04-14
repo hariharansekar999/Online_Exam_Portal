@@ -6,6 +6,7 @@ import { Exam } from '../../model/interfaces/exam'; // Import your Exam interfac
 import { User } from '../../model/interfaces/user'; // Import your User interface
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Report } from '../../model/interfaces/report';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -13,17 +14,32 @@ interface ApiResponse<T> {
   errorMessage?: string;
 }
 
+interface LeaderboardEntry {
+  id: number;
+  examId: number;
+  username: string;
+  marks: number;
+  position: number;
+}
+
 @Component({
   selector: 'app-student-page',
   templateUrl: './student-page.component.html',
   styleUrls: ['./student-page.component.css'],
-  imports:[RouterLink, CommonModule, FormsModule]
+  imports:[CommonModule, FormsModule]
 })
 export class StudentPageComponent implements OnInit {
   selectedOption: string = 'availableExams'; // Default to show exams
+
   availableExams: Exam[] = [];
+
+  reports: Report[] = [];
+
   loggedInUsername: string = ''; // To store the logged-in username
   userProfile: User | null = null;
+
+  leaderboard: LeaderboardEntry[] = []; // Add leaderboard property
+  selectedExamId: number | null = null; 
 
   constructor(
     private router: Router,
@@ -32,9 +48,8 @@ export class StudentPageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // this.loadLoggedInUsername();
-    // this.loadUserProfile();
-    // this.loadAvailableExams(); // Load exams when the page loads
+    this.loadLoggedInUsername();
+    this.loadAvailableExams();
   }
 
   selectOption(option: string): void {
@@ -43,15 +58,42 @@ export class StudentPageComponent implements OnInit {
     if (option === 'availableExams') {
       this.loadAvailableExams();
     } else if (option === 'attendExam') {
+      console.log(this.loggedInUsername);
       console.log('Attend Exam section clicked.');
     } else if (option === 'viewReport') {
       console.log('Get Report section clicked.');
+      this.loadReports();
     } else if (option === 'leaderboard') {
       console.log('View Leaderboard section clicked.');
+      this.loadLeaderboard();
     } else if( option === 'profile') {
       console.log('Profile section clicked.');
-      this.loadLoggedInUsername();
-      // this.loadUserProfile();
+      this.loadUserProfile(); 
+    }
+  }
+
+  loadReports(): void {
+    if (this.loggedInUsername) {
+      this.studentService.getReports(this.loggedInUsername).subscribe(
+        (data) => {
+          if (Array.isArray(data)) {
+            console.log('Reports loaded:', data);
+            this.reports = data;
+          } else if (data) {
+            // It's a single report object
+            this.reports = [data]; // Wrap it in an array so *ngFor works
+          } else {
+            this.reports = []; // No reports
+          }
+        },
+        (error) => {
+          console.error('Error fetching reports:', error);
+          this.reports = []; // Handle errors by clearing the reports array
+        }
+      );
+    } else {
+      console.error('Username not found in local storage.');
+      this.reports = []; // Handle missing username
     }
   }
 
@@ -105,5 +147,25 @@ export class StudentPageComponent implements OnInit {
         console.error('Error loading available exams:', error);
       }
     );
+  }
+
+  loadLeaderboard(): void {
+    if (this.selectedExamId) {
+      this.studentService.getLeaderboard(this.selectedExamId).subscribe(
+        (data) => {
+          this.leaderboard = data;
+        },
+        (error) => {
+          console.error('Error loading leaderboard:', error);
+          this.leaderboard = [];
+        }
+      );
+    }
+  }
+
+  goToAttendExam(examId: number, username: string): void {
+    this.router.navigate(['/student/attend-exam', examId], {
+      queryParams: { username: username } // Pass username as query parameter
+    });
   }
 }

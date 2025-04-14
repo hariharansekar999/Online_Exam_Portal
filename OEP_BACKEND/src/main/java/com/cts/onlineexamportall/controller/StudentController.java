@@ -18,9 +18,11 @@ import com.cts.onlineexamportall.exception.ExamNotFoundException;
 import com.cts.onlineexamportall.exception.PasswordMisMatchException;
 import com.cts.onlineexamportall.exception.UserNotFoundException;
 import com.cts.onlineexamportall.model.Exam;
+import com.cts.onlineexamportall.model.Leaderboard;
 import com.cts.onlineexamportall.model.Report;
 import com.cts.onlineexamportall.model.User;
 import com.cts.onlineexamportall.service.ExamService;
+import com.cts.onlineexamportall.service.LeaderboardService;
 import com.cts.onlineexamportall.service.ReportService;
 import com.cts.onlineexamportall.service.UserService;
 
@@ -46,6 +48,9 @@ public class StudentController {
 
     @Autowired
     private ReportService reportService;
+
+    @Autowired
+    private LeaderboardService leaderboardService;
 
     @GetMapping("/profile")
     public ResponseEntity<Response<?>> getProfile(@RequestParam String username) {
@@ -115,6 +120,22 @@ public class StudentController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (UserNotFoundException e) {
             logger.error("Error fetching reports for username: {}. Reason: {}", username, e.getMessage());
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    //leaderboard
+    @GetMapping("/leaderboard/{examId}")
+    public ResponseEntity<Response<?>> getLeaderboard(@PathVariable Long examId) {
+        try {
+            logger.info("Fetching leaderboard for examId: {}", examId);
+            List<Leaderboard> leaderboard = leaderboardService.getLeaderboardByExamId(examId);
+            Response<List<Leaderboard>> response = new Response<>(true, HttpStatus.OK, leaderboard, "Leaderboard fetched successfully");
+            logger.info("Leaderboard fetched successfully for examId: {}", examId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error fetching leaderboard for examId: {}. Reason: {}", examId, e.getMessage());
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }

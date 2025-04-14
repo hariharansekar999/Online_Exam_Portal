@@ -15,8 +15,6 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long reportId;
 
-    // @JoinColumn(name = "user_name", referencedColumnName = "userName", insertable = false, updatable = false)
-    // @Column(name = "user_name")
     private String userName;
 
     private long examId;

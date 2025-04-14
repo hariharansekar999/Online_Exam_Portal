@@ -1,0 +1,23 @@
+<div class="attend-exam-container container mt-4">
+    <h3>Attend Exam {{ examId }}</h3>
+    <p>Time remaining: {{ timer }} seconds</p>
+
+    <div *ngFor="let question of questions">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ question.description }}</h5>
+                <textarea class="form-control" [(ngModel)]="answers[question.questionId]"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-primary" (click)="submitExam()">Submit Exam</button>
+
+    <div *ngIf="showModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3>{{ modalTitle }}</h3>
+          <p>{{ modalMessage }}</p>
+          <button class="btn btn-success" (click)="closeModal()">OK</button>
+        </div>
+      </div>
+</div>
