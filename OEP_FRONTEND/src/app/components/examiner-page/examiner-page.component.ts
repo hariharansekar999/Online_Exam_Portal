@@ -12,12 +12,22 @@ import { ApiError } from '../../model/interfaces/apierror';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Report } from '../../model/interfaces/report';
 import { AdminService } from '../../services/admin/admin-service.service';
+import { StudentService } from '../../services/student/student.service';
+import { User } from '../../model/interfaces/user';
 
 interface ApiResponse<T> {
   success: boolean;
-  status: string;
-  data: T | null;
+  string?: string;
+  data?: T | null;
   errorMessage: string | null;
+}
+
+interface LeaderboardEntry {
+  id: number;
+  examId: number;
+  username: string;
+  marks: number;
+  position: number;
 }
 
 interface ExamDTO {
@@ -103,12 +113,15 @@ export class ExaminerPageComponent implements OnInit {
     private questionService: QuestionService,
     private router: Router,
     private authService: AuthService,
-    private adminService: AdminService
+    private adminService: AdminService,
+    private studentService: StudentService
   ) { }
 
   ngOnInit(): void {
     // Optionally load exams on initialization
     this.loadExams();
+    this.loadLoggedInUsername();
+    this.loadUserProfile();
   }
 
   selectOption(option: string | null): void {
@@ -160,6 +173,9 @@ export class ExaminerPageComponent implements OnInit {
       this.showAllReports();
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
+    } else if( option ==='profile'){
+      this.loadLoggedInUsername();
+        this.loadUserProfile();
     }
   }
 
@@ -529,6 +545,87 @@ export class ExaminerPageComponent implements OnInit {
     });
   }
 
+  loggedInUsername: string = ''; // To store the logged-in username
+  userProfile: User | null = null;
+
+  showPasswordForm: boolean = false;
+  newPassword: string = '';
+  confirmPassword: string = '';
+
+  showUpdatePasswordForm(): void {
+    this.showPasswordForm = true;
+  }
+
+  oldPassword: string = '';
+  closePasswordForm(): void {
+    this.showPasswordForm = false;
+    this.oldPassword = ''; // Reset oldPassword
+    this.newPassword = '';
+    this.confirmPassword = '';
+  }
+
+  loadUserProfile(): void {
+    if (this.loggedInUsername) {
+      this.studentService.getProfile(this.loggedInUsername).subscribe({
+        next: (response) => {
+          const typedResponse = response as ApiResponse<User>; // Explicit cast
+          if (typedResponse.success && typedResponse.data) {
+            this.userProfile = typedResponse.data;
+            console.log('User profile loaded:', this.userProfile);
+          } else {
+            console.error('Error loading user profile:', typedResponse.errorMessage);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading user profile:', error);
+        }
+      });
+    } else {
+      console.warn('Username not found, cannot load profile.');
+    }
+  }
+
+  updatePassword(): void {
+    if (this.newPassword !== this.confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    if (!this.loggedInUsername) {
+      alert('User not logged in.');
+      return;
+    }
+
+    // Cast the role to the correct literal type
+    const role = this.userProfile?.roles[0] || 'EXAMINER';
+    const updateRequest = {
+      userName: this.loggedInUsername,
+      email: this.userProfile?.email || '',
+      role: role as 'STUDENT' | 'EXAMINER' | 'ADMIN',
+      password: this.oldPassword, // Include oldPassword
+    };
+
+    this.authService.updatePassword(updateRequest, this.newPassword).subscribe(
+      (response) => {
+        alert('Password updated successfully.');
+        this.closePasswordForm();
+      },
+      (error) => {
+        console.error('Error updating password:', error);
+        alert('Error updating password. Please try again.');
+      }
+    );
+  }
+
+  loadLoggedInUsername(): void {
+      const token = this.authService.getToken();
+      if (token) {
+        const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
+        this.loggedInUsername = decodedToken?.sub || '';
+      }
+      console.log('Logged-in username:', this.loggedInUsername);
+    }
+
   fetchExamDetails(examId: number): void {
     this.examinerService.getExamById(examId).subscribe({
       next: (response: ApiResponse<Exam>) => {
@@ -613,5 +710,22 @@ export class ExaminerPageComponent implements OnInit {
     this.feedbackToUpdate = report.feedback || '';
     this.updateFeedbackMessage = '';
     this.isUpdateFeedbackSuccess = null;
+  }
+
+ 
+  selectedExamId: number | null = null;
+  leaderboard: LeaderboardEntry[] = [];
+  loadLeaderboard(): void {
+    if (this.selectedExamId) {
+      this.studentService.getLeaderboard(this.selectedExamId).subscribe( // Use StudentService
+        (data) => {
+          this.leaderboard = data;
+        },
+        (error) => {
+          console.error('Error loading leaderboard:', error);
+          this.leaderboard = [];
+        }
+      );
+    }
   }
 }

@@ -8,6 +8,15 @@ import { User } from '../../model/interfaces/user';
 import { Exam } from '../../model/interfaces/exam';
 import { FormsModule } from '@angular/forms';
 import { Report } from '../../model/interfaces/report'; // Import Report interface
+import { StudentService } from '../../services/student/student.service';
+
+
+interface ApiResponse<T> {
+  success: boolean;
+  string?: string;
+  data?: T | null;
+  errorMessage: string | null;
+}
 
 interface UserRequest {
   userName: string;
@@ -15,10 +24,13 @@ interface UserRequest {
   role: 'EXAMINER' | 'ADMIN' | 'STUDENT';
   password: string;
 }
-interface PasswordUpdateRequest {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
+
+interface LeaderboardEntry {
+  id: number;
+  examId: number;
+  username: string;
+  marks: number;
+  position: number;
 }
 
 @Component({
@@ -32,6 +44,16 @@ export class AdminPageComponent implements OnInit {
   exams: Exam[] = [];
   reports: Report[] = [];
   selectedOption: string | null = null;
+
+  selectedExamId: number | null = null;
+  leaderboard: LeaderboardEntry[] = [];
+
+  loggedInUsername: string = ''; // To store the logged-in username
+    userProfile: User | null = null;
+  
+    showPasswordForm: boolean = false;
+    newPassword: string = '';
+    confirmPassword: string = '';
 
   registrationData: UserRequest = {
     userName: '',
@@ -48,12 +70,16 @@ export class AdminPageComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private adminService: AdminService,
-    private examinerService: ExaminerService
+    private examinerService: ExaminerService, 
+    private studentService: StudentService
   ) { }
 
   ngOnInit(): void {
     // Load initial data or set default view if needed
     this.selectOption(null); // Or a default option like 'users'
+    this.loadExams();
+    this.loadLoggedInUsername();
+    this.loadUserProfile();
   }
 
   selectOption(option: string | null): void {
@@ -62,12 +88,35 @@ export class AdminPageComponent implements OnInit {
 
     if (this.selectedOption === 'users') {
       this.loadUsers();
+      this.showPasswordForm = false;
     } else if (this.selectedOption === 'exams') {
       this.loadExams();
+      this.showPasswordForm = false;
     } else if (this.selectedOption === 'reports') {
       this.loadReports();
+      this.showPasswordForm = false;  
     } else if (this.selectedOption === 'profileUpdate') {
       console.log('Profile update selected');
+    } else if (this.selectedOption === 'leaderboard') {
+      this.loadLeaderboard();
+      this.showPasswordForm = false;
+    } else if ( this.selectedOption === 'profile') {
+      this.loadLoggedInUsername();
+      this.loadUserProfile();
+    }
+  }
+
+  loadLeaderboard(): void {
+    if (this.selectedExamId) {
+      this.studentService.getLeaderboard(this.selectedExamId).subscribe( // Use StudentService
+        (data) => {
+          this.leaderboard = data;
+        },
+        (error) => {
+          console.error('Error loading leaderboard:', error);
+          this.leaderboard = [];
+        }
+      );
     }
   }
 
@@ -148,4 +197,80 @@ export class AdminPageComponent implements OnInit {
     this.authService.removeToken();
     this.router.navigate(['/login']);
   }
+
+
+  
+    showUpdatePasswordForm(): void {
+      this.showPasswordForm = true;
+    }
+  
+    oldPassword: string = '';
+    closePasswordForm(): void {
+      this.showPasswordForm = false;
+      this.oldPassword = ''; // Reset oldPassword
+      this.newPassword = '';
+      this.confirmPassword = '';
+    }
+  
+    loadUserProfile(): void {
+      if (this.loggedInUsername) {
+        this.studentService.getProfile(this.loggedInUsername).subscribe({
+          next: (response) => {
+            const typedResponse = response as ApiResponse<User>; // Explicit cast
+            if (typedResponse.success && typedResponse.data) {
+              this.userProfile = typedResponse.data;
+              console.log('User profile loaded:', this.userProfile);
+            } else {
+              console.error('Error loading user profile:', typedResponse.errorMessage);
+            }
+          },
+          error: (error) => {
+            console.error('Error loading user profile:', error);
+          }
+        });
+      } else {
+        console.warn('Username not found, cannot load profile.');
+      }
+    }
+  
+    updatePassword(): void {
+      if (this.newPassword !== this.confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+      }
+  
+      if (!this.loggedInUsername) {
+        alert('User not logged in.');
+        return;
+      }
+  
+      // Cast the role to the correct literal type
+      const role = this.userProfile?.roles[0] || 'EXAMINER';
+      const updateRequest = {
+        userName: this.loggedInUsername,
+        email: this.userProfile?.email || '',
+        role: role as 'STUDENT' | 'EXAMINER' | 'ADMIN',
+        password: this.oldPassword, // Include oldPassword
+      };
+  
+      this.authService.updatePassword(updateRequest, this.newPassword).subscribe(
+        (response) => {
+          alert('Password updated successfully.');
+          this.closePasswordForm();
+        },
+        (error) => {
+          console.error('Error updating password:', error);
+          alert('Error updating password. Please try again.');
+        }
+      );
+    }
+  
+    loadLoggedInUsername(): void {
+        const token = this.authService.getToken();
+        if (token) {
+          const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
+          this.loggedInUsername = decodedToken?.sub || '';
+        }
+        console.log('Logged-in username:', this.loggedInUsername);
+      }
 }

@@ -16,6 +16,7 @@ interface UserRequest {
   role: 'EXAMINER' | 'ADMIN' | 'STUDENT';
   password: string;
 }
+
 interface RegistrationResponse {
   success: boolean;
   status: string;
@@ -32,6 +33,12 @@ interface UserRoleResponse {
   statusCode: number;
   message: string | null;
   success: boolean;
+}
+
+interface Response<T> {
+  success: boolean;
+  data?: T;
+  errorMessage?: string;
 }
 
 @Injectable({
@@ -107,5 +114,9 @@ export class AuthService {
     });
 
     return this.http.get<UserRoleResponse>(`${this.baseUrl}/getRole?username=${username}`, { headers });
+  }
+
+  updatePassword(request: UserRequest , newPassword: string): Observable<Response<any>> {
+    return this.http.put<Response<any>>(`${this.baseUrl}/updatePassword?newPassword=${newPassword}`, request);
   }
 }

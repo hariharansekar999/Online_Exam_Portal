@@ -120,9 +120,30 @@
           <p class="card-text"><strong>Email:</strong> {{ userProfile.email }}</p>
           <p class="card-text"><strong>Roles:</strong> {{ userProfile.roles.join(', ') }}</p>
           <p class="card-text"><strong>User ID:</strong> {{ userProfile.userId }}</p>
+          <button class="btn btn-primary mt-3" (click)="showUpdatePasswordForm()">Update Password</button>
         </div>
       </div>
     </div>
+    <div *ngIf="showPasswordForm" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Update Password</h3>
+        <div class="mb-3">
+          <label for="oldPassword" class="form-label">Old Password</label>
+          <input type="password" class="form-control" id="oldPassword" [(ngModel)]="oldPassword">
+        </div>
+        <div class="mb-3">
+          <label for="newPassword" class="form-label">New Password</label>
+          <input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword">
+        </div>
+        <div class="mb-3">
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+          <input type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword">
+        </div>
+        <button class="btn btn-primary" (click)="updatePassword()">Update</button>
+        <button class="btn btn-secondary" (click)="closePasswordForm()">Cancel</button>
+      </div>
+    </div>
+    
     <div *ngIf="selectedOption === 'profile' && !userProfile">
       <p class="lead text-muted">Loading profile information...</p>
     </div>

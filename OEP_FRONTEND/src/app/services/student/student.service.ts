@@ -8,6 +8,7 @@ import { ExamResponseDTO } from '../../model/interfaces/exam-response-dto';
 
 interface ApiResponse<T> {
   success: boolean;
+  string?: string;
   data?: T;
   errorMessage?: string;
 }

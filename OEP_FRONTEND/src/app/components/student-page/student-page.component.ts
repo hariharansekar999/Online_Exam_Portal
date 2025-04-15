@@ -41,6 +41,10 @@ export class StudentPageComponent implements OnInit {
   leaderboard: LeaderboardEntry[] = []; // Add leaderboard property
   selectedExamId: number | null = null; 
 
+  showPasswordForm: boolean = false;
+  newPassword: string = '';
+  confirmPassword: string = '';
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -167,5 +171,49 @@ export class StudentPageComponent implements OnInit {
     this.router.navigate(['/student/attend-exam', examId], {
       queryParams: { username: username } // Pass username as query parameter
     });
+  }
+
+  showUpdatePasswordForm(): void {
+    this.showPasswordForm = true;
+  }
+
+  oldPassword: string = '';
+  closePasswordForm(): void {
+    this.showPasswordForm = false;
+    this.oldPassword = ''; // Reset oldPassword
+    this.newPassword = '';
+    this.confirmPassword = '';
+  }
+
+  updatePassword(): void {
+    if (this.newPassword !== this.confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    if (!this.loggedInUsername) {
+      alert('User not logged in.');
+      return;
+    }
+
+    // Cast the role to the correct literal type
+    const role = this.userProfile?.roles[0] || 'STUDENT';
+    const updateRequest = {
+      userName: this.loggedInUsername,
+      email: this.userProfile?.email || '',
+      role: role as 'STUDENT' | 'EXAMINER' | 'ADMIN',
+      password: this.oldPassword, // Include oldPassword
+    };
+
+    this.authService.updatePassword(updateRequest, this.newPassword).subscribe(
+      (response) => {
+        alert('Password updated successfully.');
+        this.closePasswordForm();
+      },
+      (error) => {
+        console.error('Error updating password:', error);
+        alert('Error updating password. Please try again.');
+      }
+    );
   }
 }
