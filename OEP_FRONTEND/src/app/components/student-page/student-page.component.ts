@@ -7,6 +7,7 @@ import { User } from '../../model/interfaces/user'; // Import your User interfac
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Report } from '../../model/interfaces/report';
+import { HeaderComponent } from '../header/header.component';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -70,6 +71,7 @@ export class StudentPageComponent implements OnInit {
     } else if (option === 'leaderboard') {
       console.log('View Leaderboard section clicked.');
       this.loadLeaderboard();
+      this.showPasswordForm = false; // Hide password form if visible
     } else if( option === 'profile') {
       console.log('Profile section clicked.');
       this.loadUserProfile(); 

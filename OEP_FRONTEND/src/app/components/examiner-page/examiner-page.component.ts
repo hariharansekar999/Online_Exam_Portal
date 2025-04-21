@@ -51,8 +51,17 @@ interface CategoryQuestionDTO {
 })
 export class ExaminerPageComponent implements OnInit {
   selectedOption: string | null = null;
-  allQuestions: Question[] = [];
 
+  // User and Profile related variables
+  loggedInUsername: string = ''; // To store the logged-in username
+  userProfile: User | null = null;
+  showPasswordForm: boolean = false;
+  oldPassword: string = '';
+  newPassword: string = '';
+  confirmPassword: string = '';
+
+  // Exam related variables
+  exams: Exam[] = [];
   examData: ExamDTO = {
     title: '',
     description: '',
@@ -60,22 +69,31 @@ export class ExaminerPageComponent implements OnInit {
     duration: null
   };
   category: string = '';
-  errorMessage: string = '';
-  successMessage: string = '';
-  messageTimeout: any;
-  exams: Exam[] = [];
+  showUpdateExamForm: boolean = false;
+  selectedExamIdForUpdate: number | null = null;
+  updateExamData: ExamDTO = { title: '', description: '', totalMarks: null, duration: null };
+  updateExamMessage: string = '';
+  isUpdateExamSuccess: boolean = false;
+  selectedExamIdForEvaluation: number | null = null;
+  usernameToEvaluateSingle: string = '';
+  evaluationMessage: string = '';
+  isEvaluationSuccess: boolean | null = null;
+  singleEvaluationResult: Report | null = null;
+  fetchedExam: Exam | null = null;
+  selectedExamId: number | null = null;
+  leaderboard: LeaderboardEntry[] = [];
 
+  // Question related variables
+  allQuestions: Question[] = [];
   showSingleQuestionForm: boolean = false;
   showMultipleQuestionsForm: boolean = false;
   isShowCreateByCategoryForm: boolean = false; // Corrected property name
-
   newQuestion: QuestionDTO = {
     description: '',
     category: '',
     difficulty: '',
     correctAnswer: ''
   };
-
   multipleQuestions: QuestionDTO[] = [];
   currentMultipleQuestion: QuestionDTO = {
     description: '',
@@ -83,7 +101,6 @@ export class ExaminerPageComponent implements OnInit {
     difficulty: '',
     correctAnswer: ''
   };
-
   categoryQuestions: CategoryQuestionDTO[] = [];
   currentCategoryQuestion: CategoryQuestionDTO = {
     description: '',
@@ -91,22 +108,24 @@ export class ExaminerPageComponent implements OnInit {
     difficulty: ''
   };
   selectedCategoryForQuestions: string = '';
-
-  showUpdateExamForm: boolean = false;
   showUpdateQuestionForm: boolean = false;
-
-  selectedExamIdForUpdate: number | null = null;
-  updateExamData: ExamDTO = { title: '', description: '', totalMarks: null, duration: null };
-
   selectedQuestionIdForUpdate: number | null = null;
   updateQuestionData: QuestionDTO = { description: '', category: '', difficulty: '', correctAnswer: '' };
+  updateQuestionMessage: string = '';
+  isUpdateQuestionSuccess: boolean = false;
 
-  selectedExamIdForEvaluation: number | null = null;
-  usernameToEvaluateSingle: string = '';
-  evaluationMessage: string = '';
-  isEvaluationSuccess: boolean | null = null;
-  singleEvaluationResult: Report | null = null;
-  fetchedExam: Exam | null = null;
+  // Report related variables
+  reports: Report[] = [];
+  showReportsList: boolean = false;
+  selectedReportForFeedback: Report | null = null;
+  feedbackToUpdate: string = '';
+  updateFeedbackMessage: string = '';
+  isUpdateFeedbackSuccess: boolean | null = null;
+
+  // Message variables
+  errorMessage: string = '';
+  successMessage: string = '';
+  messageTimeout: any;
 
   constructor(
     private examinerService: ExaminerService,
@@ -124,6 +143,7 @@ export class ExaminerPageComponent implements OnInit {
     this.loadUserProfile();
   }
 
+  // Navigation and Selection
   selectOption(option: string | null): void {
     this.selectedOption = option;
     this.clearMessages();
@@ -135,6 +155,7 @@ export class ExaminerPageComponent implements OnInit {
       this.category = '';
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
+      this.showPasswordForm = false;
     } else if (option === 'createQuestions') {
       this.newQuestion = { description: '', category: '', difficulty: '', correctAnswer: '' };
       this.multipleQuestions = [];
@@ -144,55 +165,125 @@ export class ExaminerPageComponent implements OnInit {
       this.selectedCategoryForQuestions = '';
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
-    } else if( option === 'viewQuestions') {
+      this.showPasswordForm = false;
+    } else if (option === 'viewQuestions') {
       this.loadAllQuestions();
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
-    }else if (option === 'updateData') {
+      this.showPasswordForm = false;
+    } else if (option === 'updateData') {
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
+      this.showPasswordForm = false;
     } else if (option === 'updateExamForm') {
       this.showUpdateExamForm = true;
       this.showUpdateQuestionForm = false;
       this.loadExams();
+      this.showPasswordForm = false;
     } else if (option === 'updateQuestionForm') {
       this.showUpdateQuestionForm = true;
       this.showUpdateExamForm = false;
       this.loadAllQuestions();
-    } else if ( option === 'evaluateExams'){
+    } else if (option === 'evaluateExams') {
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
-
       this.selectedExamIdForEvaluation = null;
       this.usernameToEvaluateSingle = '';
       this.evaluationMessage = '';
       this.isEvaluationSuccess = null;
       this.singleEvaluationResult = null;
       this.fetchedExam = null;
-    } else if( option === 'viewReports') {
+      this.showPasswordForm = false;
+    } else if (option === 'viewReports') {
       this.showAllReports();
       this.showUpdateExamForm = false;
       this.showUpdateQuestionForm = false;
-    } else if( option ==='profile'){
+      this.showPasswordForm = false;
+    } else if (option === 'profile') {
       this.loadLoggedInUsername();
-        this.loadUserProfile();
+      this.loadUserProfile();
+    }else{
+      this.showUpdateExamForm = false;
+      this.showUpdateQuestionForm = false;
+      this.showPasswordForm = false;
     }
   }
 
-  clearMessages(): void {
-    clearTimeout(this.messageTimeout);
-    this.messageTimeout = null;
-    this.errorMessage = '';
-    this.successMessage = '';
+  // Profile Management
+  loadLoggedInUsername(): void {
+    const token = this.authService.getToken();
+    if (token) {
+      const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
+      this.loggedInUsername = decodedToken?.sub || '';
+    }
+    console.log('Logged-in username:', this.loggedInUsername);
   }
 
-  setMessageTimeout(): void {
-    this.messageTimeout = setTimeout(() => {
-      this.clearMessages();
-    }, 3000);
+  loadUserProfile(): void {
+    if (this.loggedInUsername) {
+      this.studentService.getProfile(this.loggedInUsername).subscribe({
+        next: (response) => {
+          const typedResponse = response as ApiResponse<User>; // Explicit cast
+          if (typedResponse.success && typedResponse.data) {
+            this.userProfile = typedResponse.data;
+            console.log('User profile loaded:', this.userProfile);
+          } else {
+            console.error('Error loading user profile:', typedResponse.errorMessage);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading user profile:', error);
+        }
+      });
+    } else {
+      console.warn('Username not found, cannot load profile.');
+    }
   }
 
-  // --- Exam related functions ---
+  showUpdatePasswordForm(): void {
+    this.showPasswordForm = true;
+  }
+
+  closePasswordForm(): void {
+    this.showPasswordForm = false;
+    this.oldPassword = ''; // Reset oldPassword
+    this.newPassword = '';
+    this.confirmPassword = '';
+  }
+
+  updatePassword(): void {
+    if (this.newPassword !== this.confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    if (!this.loggedInUsername) {
+      alert('User not logged in.');
+      return;
+    }
+
+    // Cast the role to the correct literal type
+    const role = this.userProfile?.roles[0] || 'EXAMINER';
+    const updateRequest = {
+      userName: this.loggedInUsername,
+      email: this.userProfile?.email || '',
+      role: role as 'STUDENT' | 'EXAMINER' | 'ADMIN',
+      password: this.oldPassword, // Include oldPassword
+    };
+
+    this.authService.updatePassword(updateRequest, this.newPassword).subscribe(
+      (response) => {
+        alert('Password updated successfully.');
+        this.closePasswordForm();
+      },
+      (error) => {
+        console.error('Error updating password:', error);
+        alert('Error updating password. Please try again.');
+      }
+    );
+  }
+
+  // Exam Management
   loadExams(): void {
     this.examinerService.getAllExams().subscribe(
       (data) => {
@@ -222,6 +313,7 @@ export class ExaminerPageComponent implements OnInit {
           this.loadExams(); // Reload exams after creation
         } else {
           this.errorMessage = response.errorMessage || 'Failed to create exam.';
+          alert(this.errorMessage);
           this.setMessageTimeout();
         }
       },
@@ -254,12 +346,112 @@ export class ExaminerPageComponent implements OnInit {
     );
   }
 
-  logout(): void {
-    this.authService.removeToken();
-    this.router.navigate(['/login']);
+  updateExam(): void {
+    this.clearMessages();
+    if (this.selectedExamIdForUpdate) {
+      this.questionService.updateExam(this.selectedExamIdForUpdate, this.updateExamData).subscribe({
+        next: (response: ApiResponse<Exam>) => {
+          if (response.success && response.data) {
+            this.updateExamMessage = `Exam with ID ${this.selectedExamIdForUpdate} updated successfully!`;
+            this.isUpdateExamSuccess = true;
+            this.loadExams();
+            this.showUpdateExamForm = false;
+            this.selectedOption = 'updateData';
+            // No need for setMessageTimeout if using the modal
+          } else {
+            this.updateExamMessage = response.errorMessage || `Failed to update exam with ID ${this.selectedExamIdForUpdate}.`;
+            this.isUpdateExamSuccess = false;
+            // No need for setMessageTimeout if using the modal
+          }
+        },
+        error: (error: ApiError) => {
+          console.error(`Error updating exam with ID ${this.selectedExamIdForUpdate}:`, error);
+          this.updateExamMessage = `An unexpected error occurred while updating exam with ID ${this.selectedExamIdForUpdate}.`;
+          this.isUpdateExamSuccess = false;
+          // No need for setMessageTimeout if using the modal
+        }
+      });
+    } else {
+      this.updateExamMessage = 'Please select an exam to update.';
+      this.isUpdateExamSuccess = false;
+      // No need for setMessageTimeout if using the modal
+    }
   }
 
-  // --- Question form visibility control ---
+  closeUpdateExamModal() {
+    this.updateExamMessage = '';
+  }
+
+  evaluateSingleExam(): void {
+    if (!this.selectedExamIdForEvaluation) {
+      this.evaluationMessage = 'Please enter an Exam ID to evaluate.';
+      this.isEvaluationSuccess = false;
+      return;
+    }
+    if (!this.usernameToEvaluateSingle) {
+      this.evaluationMessage = 'Please enter a username to evaluate.';
+      this.isEvaluationSuccess = false;
+      return;
+    }
+
+    this.evaluationMessage = 'Evaluating exam...';
+    this.isEvaluationSuccess = null;
+    this.singleEvaluationResult = null;
+    this.fetchedExam = null;
+
+    // Now we know selectedExamIdForEvaluation is not null due to the check above
+    this.examinerService.evaluateExam(this.selectedExamIdForEvaluation, this.usernameToEvaluateSingle).subscribe({
+      next: (response: ApiResponse<Report>) => {
+        if (response.success && response.data) {
+          this.singleEvaluationResult = response.data;
+          this.evaluationMessage = `Evaluation for Exam ID <span class="math-inline">\{this\.selectedExamIdForEvaluation\} and User "</span>{this.usernameToEvaluateSingle}" successful!`;
+          this.isEvaluationSuccess = true;
+          this.fetchExamDetails(this.selectedExamIdForEvaluation!); // Use the non-null assertion operator
+          this.selectedExamIdForEvaluation = null;
+          this.usernameToEvaluateSingle = '';
+        } else {
+          this.evaluationMessage = response.errorMessage || `Failed to evaluate Exam ID <span class="math-inline">\{this\.selectedExamIdForEvaluation\} for User "</span>{this.usernameToEvaluateSingle}".`;
+          this.isEvaluationSuccess = false;
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error(`Error evaluating Exam ID <span class="math-inline">\{this\.selectedExamIdForEvaluation\} for User "</span>{this.usernameToEvaluateSingle}":`, error);
+        this.evaluationMessage = `An unexpected error occurred while evaluating Exam ID <span class="math-inline">\{this\.selectedExamIdForEvaluation\} for User "</span>{this.usernameToEvaluateSingle}".`;
+        this.isEvaluationSuccess = false;
+      }
+    });
+  }
+
+  fetchExamDetails(examId: number): void {
+    this.examinerService.getExamById(examId).subscribe({
+      next: (response: ApiResponse<Exam>) => {
+        if (response.success && response.data) {
+          this.fetchedExam = response.data;
+        } else {
+          console.error(`Failed to load exam details for ID ${examId}:`, response.errorMessage);
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error(`Error loading exam details for ID ${examId}:`, error);
+      }
+    });
+  }
+
+  loadLeaderboard(): void {
+    if (this.selectedExamId) {
+      this.studentService.getLeaderboard(this.selectedExamId).subscribe( // Use StudentService
+        (data) => {
+          this.leaderboard = data;
+        },
+        (error) => {
+          console.error('Error loading leaderboard:', error);
+          this.leaderboard = [];
+        }
+      );
+    }
+  }
+
+  // Question Management
   showCreateSingleQuestionForm(show: boolean = true): void {
     this.showSingleQuestionForm = show;
     this.showMultipleQuestionsForm = false;
@@ -278,10 +470,6 @@ export class ExaminerPageComponent implements OnInit {
     this.showMultipleQuestionsForm = false;
   }
 
-  removeMultipleQuestion(index: number): void {
-    this.multipleQuestions.splice(index, 1);
-  }
-  // --- Question creation functions ---
   createSingleQuestion(): void {
     this.clearMessages();
     this.questionService.createQuestion(this.newQuestion).subscribe(
@@ -344,6 +532,9 @@ export class ExaminerPageComponent implements OnInit {
       this.errorMessage = 'Please enter a category.';
       this.setMessageTimeout();
     }
+  }
+  removeMultipleQuestion(index: number): void {
+    this.multipleQuestions.splice(index, 1);
   }
   removeCategoryQuestion(index: number): void {
     this.categoryQuestions.splice(index, 1);
@@ -425,45 +616,6 @@ export class ExaminerPageComponent implements OnInit {
     }
   }
 
-
-  updateExamMessage: string = '';
-  isUpdateExamSuccess: boolean = false;
-  updateQuestionMessage: string = '';
-  isUpdateQuestionSuccess: boolean = false;
-  
-  updateExam(): void {
-    this.clearMessages();
-    if (this.selectedExamIdForUpdate) {
-      this.questionService.updateExam(this.selectedExamIdForUpdate, this.updateExamData).subscribe({
-        next: (response: ApiResponse<Exam>) => {
-          if (response.success && response.data) {
-            this.updateExamMessage = `Exam with ID ${this.selectedExamIdForUpdate} updated successfully!`;
-            this.isUpdateExamSuccess = true;
-            this.loadExams();
-            this.showUpdateExamForm = false;
-            this.selectedOption = 'updateData';
-            // No need for setMessageTimeout if using the modal
-          } else {
-            this.updateExamMessage = response.errorMessage || `Failed to update exam with ID ${this.selectedExamIdForUpdate}.`;
-            this.isUpdateExamSuccess = false;
-            // No need for setMessageTimeout if using the modal
-          }
-        },
-        error: (error: ApiError) => {
-          console.error(`Error updating exam with ID ${this.selectedExamIdForUpdate}:`, error);
-          this.updateExamMessage = `An unexpected error occurred while updating exam with ID ${this.selectedExamIdForUpdate}.`;
-          this.isUpdateExamSuccess = false;
-          // No need for setMessageTimeout if using the modal
-        }
-      });
-    } else {
-      this.updateExamMessage = 'Please select an exam to update.';
-      this.isUpdateExamSuccess = false;
-      // No need for setMessageTimeout if using the modal
-    }
-  }
-
-
   updateQuestion(): void {
     this.clearMessages();
     if (this.selectedQuestionIdForUpdate) {
@@ -497,156 +649,11 @@ export class ExaminerPageComponent implements OnInit {
     }
   }
 
-  closeUpdateExamModal() {
-    this.updateExamMessage = '';
-  }
-
   closeUpdateQuestionModal() {
     this.updateQuestionMessage = '';
   }
 
-  evaluateSingleExam(): void {
-    if (!this.selectedExamIdForEvaluation) {
-      this.evaluationMessage = 'Please enter an Exam ID to evaluate.';
-      this.isEvaluationSuccess = false;
-      return;
-    }
-    if (!this.usernameToEvaluateSingle) {
-      this.evaluationMessage = 'Please enter a username to evaluate.';
-      this.isEvaluationSuccess = false;
-      return;
-    }
-
-    this.evaluationMessage = 'Evaluating exam...';
-    this.isEvaluationSuccess = null;
-    this.singleEvaluationResult = null;
-    this.fetchedExam = null;
-
-    // Now we know selectedExamIdForEvaluation is not null due to the check above
-    this.examinerService.evaluateExam(this.selectedExamIdForEvaluation, this.usernameToEvaluateSingle).subscribe({
-      next: (response: ApiResponse<Report>) => {
-        if (response.success && response.data) {
-          this.singleEvaluationResult = response.data;
-          this.evaluationMessage = `Evaluation for Exam ID ${this.selectedExamIdForEvaluation} and User "${this.usernameToEvaluateSingle}" successful!`;
-          this.isEvaluationSuccess = true;
-          this.fetchExamDetails(this.selectedExamIdForEvaluation!); // Use the non-null assertion operator
-          this.selectedExamIdForEvaluation = null;
-          this.usernameToEvaluateSingle = '';
-        } else {
-          this.evaluationMessage = response.errorMessage || `Failed to evaluate Exam ID ${this.selectedExamIdForEvaluation} for User "${this.usernameToEvaluateSingle}".`;
-          this.isEvaluationSuccess = false;
-        }
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error(`Error evaluating Exam ID ${this.selectedExamIdForEvaluation} for User "${this.usernameToEvaluateSingle}":`, error);
-        this.evaluationMessage = `An unexpected error occurred while evaluating Exam ID ${this.selectedExamIdForEvaluation} for User "${this.usernameToEvaluateSingle}".`;
-        this.isEvaluationSuccess = false;
-      }
-    });
-  }
-
-  loggedInUsername: string = ''; // To store the logged-in username
-  userProfile: User | null = null;
-
-  showPasswordForm: boolean = false;
-  newPassword: string = '';
-  confirmPassword: string = '';
-
-  showUpdatePasswordForm(): void {
-    this.showPasswordForm = true;
-  }
-
-  oldPassword: string = '';
-  closePasswordForm(): void {
-    this.showPasswordForm = false;
-    this.oldPassword = ''; // Reset oldPassword
-    this.newPassword = '';
-    this.confirmPassword = '';
-  }
-
-  loadUserProfile(): void {
-    if (this.loggedInUsername) {
-      this.studentService.getProfile(this.loggedInUsername).subscribe({
-        next: (response) => {
-          const typedResponse = response as ApiResponse<User>; // Explicit cast
-          if (typedResponse.success && typedResponse.data) {
-            this.userProfile = typedResponse.data;
-            console.log('User profile loaded:', this.userProfile);
-          } else {
-            console.error('Error loading user profile:', typedResponse.errorMessage);
-          }
-        },
-        error: (error) => {
-          console.error('Error loading user profile:', error);
-        }
-      });
-    } else {
-      console.warn('Username not found, cannot load profile.');
-    }
-  }
-
-  updatePassword(): void {
-    if (this.newPassword !== this.confirmPassword) {
-      alert('Passwords do not match.');
-      return;
-    }
-
-    if (!this.loggedInUsername) {
-      alert('User not logged in.');
-      return;
-    }
-
-    // Cast the role to the correct literal type
-    const role = this.userProfile?.roles[0] || 'EXAMINER';
-    const updateRequest = {
-      userName: this.loggedInUsername,
-      email: this.userProfile?.email || '',
-      role: role as 'STUDENT' | 'EXAMINER' | 'ADMIN',
-      password: this.oldPassword, // Include oldPassword
-    };
-
-    this.authService.updatePassword(updateRequest, this.newPassword).subscribe(
-      (response) => {
-        alert('Password updated successfully.');
-        this.closePasswordForm();
-      },
-      (error) => {
-        console.error('Error updating password:', error);
-        alert('Error updating password. Please try again.');
-      }
-    );
-  }
-
-  loadLoggedInUsername(): void {
-      const token = this.authService.getToken();
-      if (token) {
-        const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
-        this.loggedInUsername = decodedToken?.sub || '';
-      }
-      console.log('Logged-in username:', this.loggedInUsername);
-    }
-
-  fetchExamDetails(examId: number): void {
-    this.examinerService.getExamById(examId).subscribe({
-      next: (response: ApiResponse<Exam>) => {
-        if (response.success && response.data) {
-          this.fetchedExam = response.data;
-        } else {
-          console.error(`Failed to load exam details for ID ${examId}:`, response.errorMessage);
-        }
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error(`Error loading exam details for ID ${examId}:`, error);
-      }
-    });
-  }
-
-  allReports: Report[] = [];
-  showReportsList: boolean = false;
-  selectedReportForFeedback: Report | null = null;
-  feedbackToUpdate: string = '';
-  updateFeedbackMessage: string = '';
-  isUpdateFeedbackSuccess: boolean | null = null;
+ 
 
   updateReportFeedback(): void {
     if (!this.selectedReportForFeedback) {
@@ -691,7 +698,7 @@ export class ExaminerPageComponent implements OnInit {
     }
   }
 
-  reports: Report[] = [];
+
   showAllReports(): void {
     this.selectedOption = 'viewReports';
     this.adminService.getAllReports().subscribe(
@@ -712,20 +719,22 @@ export class ExaminerPageComponent implements OnInit {
     this.isUpdateFeedbackSuccess = null;
   }
 
- 
-  selectedExamId: number | null = null;
-  leaderboard: LeaderboardEntry[] = [];
-  loadLeaderboard(): void {
-    if (this.selectedExamId) {
-      this.studentService.getLeaderboard(this.selectedExamId).subscribe( // Use StudentService
-        (data) => {
-          this.leaderboard = data;
-        },
-        (error) => {
-          console.error('Error loading leaderboard:', error);
-          this.leaderboard = [];
-        }
-      );
-    }
+  clearMessages(): void {
+    clearTimeout(this.messageTimeout);
+    this.messageTimeout = null;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  setMessageTimeout(): void {
+    this.messageTimeout = setTimeout(() => {
+      this.clearMessages();
+    }, 3000);
+  }
+
+  // Logout functionality
+  logout(): void {
+    this.authService.removeToken();
+    this.router.navigate(['/login']);
   }
 }

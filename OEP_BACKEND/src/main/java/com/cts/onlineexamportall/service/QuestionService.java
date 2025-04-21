@@ -125,4 +125,12 @@ public class QuestionService {
         logger.info("Question created successfully");
         return questions;
     }
+
+    public boolean categoryExists(String category) {
+        logger.info("Checking if category exists: {}", category);
+        List<Question> questions = questionDAO.findAllByCategory(category);
+        boolean exists = !questions.isEmpty();
+        logger.info("Category exists: {}", exists);
+        return exists;
+    }
 }

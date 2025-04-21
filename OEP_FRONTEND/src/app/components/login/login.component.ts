@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoginRequest } from '../../model/interfaces/login-request';
 import { AuthService } from '../../services/auth/auth.service';
@@ -17,9 +17,11 @@ import { switchMap } from 'rxjs';
 export class LoginComponent implements OnInit {
   isLoading: boolean = true;
   credentials: LoginRequest = { username: '', password: '' };
+  role: string = '';
   errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router) { 
+  }
 
   ngOnInit(): void {
     setTimeout(() => {
@@ -28,6 +30,12 @@ export class LoginComponent implements OnInit {
   }
 
   login(): void {
+    
+      if (!this.credentials.username || !this.credentials.password || !this.role) {
+        alert('All fields are required: Username, Password, and Role.');
+        return;
+      }
+  
     this.isLoading = true;
     this.errorMessage = '';
 

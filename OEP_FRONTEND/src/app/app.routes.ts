@@ -15,3 +15,14 @@ export const routes: Routes = [
     { path: 'student', component: StudentPageComponent, canActivate: [AuthGuard], data: { roles: ['[STUDENT]'] }},
     { path: 'student/attend-exam/:examId', component: AttendExamComponent, canActivate: [AuthGuard], data: { roles: ['[STUDENT]'] }}
 ];
+
+
+// How did you handle authentication in your project? Explain the flow.
+// How did you implement role-based authorization in your project?
+// How did you manage data fetching and display in your components?
+// Can you walk us through a specific component you developed and explain its functionality and implementation?
+// How did you handle form submissions and validation in your project?
+// How did you use services to share data or logic across components?
+// Did you use any third-party Angular libraries? If so, for what purpose?
+// How did you style your Angular application? Did you use Bootstrap or custom CSS?
+// How did you handle routing and navigation in your application?

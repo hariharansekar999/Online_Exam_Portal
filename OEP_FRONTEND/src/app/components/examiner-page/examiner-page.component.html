@@ -1,30 +1,36 @@
 <!-- Update pass // exam deletion  -->
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  </head>
  
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container-fluid">
-      <a class="navbar-brand">Online Exam Portal</a>
-      <div class="d-flex ms-auto">
-        <div class="dropdown">
-          <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <strong>Examiner</strong>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" [class.active]="selectedOption === 'profile'" (click)="selectOption('profile')">
-                <i class="bi bi-person-circle me-2"></i>
-                Profile
-              </a>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <div class="text-center ">
-              <button class="btn bg-danger border text-white px-2 py-2" (click)="logout()">Logout</button>
+  <nav style="background-color: #2A3B4D; height: 60px;">
+    <div class="container-fluid d-flex justify-content-between align-items-center" style="height: 100%;">
+        <h2 class="text-white mb-0"><i class="fas fa-graduation-cap text-white me-2"></i>Online Exam Portal</h2>
+        <div class="d-flex">
+            <div class="dropdown">
+                <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle custom-dropdown-toggle"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <strong>Examiner</strong>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end custom-dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" [class.active]="selectedOption === 'profile'" (click)="selectOption('profile')">
+                            <i class="bi bi-person-circle me-2"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <div class="text-center">
+                        <button class="btn bg-danger border text-white px-2 py-2 custom-logout-button" (click)="logout()">Logout</button>
+                    </div>
+                </ul>
             </div>
-          </ul>
         </div>
-      </div>
     </div>
-  </nav>
+</nav>
   
   <main class="d-flex flex-nowrap" style="overflow: hidden;">
     <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 250px; height: calc(100vh - 56px); overflow-y: auto;">
@@ -205,8 +211,8 @@
             </div>
           </div>
   
-      <div *ngIf="selectedOption === 'createExams'" class="container mt-4">
-        <h2>Create New Exam</h2>
+      <div *ngIf="selectedOption === 'createExams'" class="container mt-4 ">
+        <h2 class="text-center">Create New Exam</h2>
         <p class="badge bg-success text-wrap">Enter the details for the new exam.</p>
   
         <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
@@ -263,7 +269,7 @@
       </div>
   
       <div *ngIf="selectedOption === 'createQuestions'" class="container mt-4">
-        <h3>Create Questions</h3>
+        <h3 class="text-center">Create Questions</h3>
         <p class="badge bg-success text-wrap">Design new questions for your exams.</p>
       
         <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
@@ -708,8 +714,8 @@
       </div>
     </div>
   
-      <div *ngIf="!selectedOption">
-        <h3>Dashboard Overview</h3>
+      <div *ngIf="!selectedOption" class="text-center">
+        <h3 class="text-success">Dashboard Overview</h3>
         <p>Select an option from the sidebar to view details.</p>
       </div>
     </div>

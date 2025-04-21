@@ -1,6 +1,7 @@
 package com.cts.onlineexamportall.controller;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 // import org.apache.logging.log4j.LogManager;
 // import org.apache.logging.log4j.Logger;
@@ -140,6 +141,10 @@ public class ExaminerController {
     @PostMapping("/createExam/{category}")
     public ResponseEntity<Response<?>> createExam(@PathVariable String category, @RequestBody ExamDTO examDTO){
         try{
+            if( !questionService.categoryExists(category)  ){
+                throw new Exception("The given category does not exist!");
+            }
+
             if( examService.examNameExists(examDTO.getTitle()) ){
                 throw new ExamExistsException("The given title already exists!");
             }
@@ -158,6 +163,9 @@ public class ExaminerController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         catch(MandatoryFieldMissingException ex){
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "Error in creating the exam", ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }catch( Exception ex){
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "Error in creating the exam", ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
