@@ -404,13 +404,13 @@ export class ExaminerPageComponent implements OnInit {
       next: (response: ApiResponse<Report>) => {
         if (response.success && response.data) {
           this.singleEvaluationResult = response.data;
-          this.evaluationMessage = `Evaluation for Exam ID <span class="math-inline">\{this\.selectedExamIdForEvaluation\} and User "</span>{this.usernameToEvaluateSingle}" successful!`;
+          this.evaluationMessage = `Successfull!`;
           this.isEvaluationSuccess = true;
           this.fetchExamDetails(this.selectedExamIdForEvaluation!); // Use the non-null assertion operator
           this.selectedExamIdForEvaluation = null;
           this.usernameToEvaluateSingle = '';
         } else {
-          this.evaluationMessage = response.errorMessage || `Failed to evaluate Exam ID <span class="math-inline">\{this\.selectedExamIdForEvaluation\} for User "</span>{this.usernameToEvaluateSingle}".`;
+          this.evaluationMessage = response.errorMessage || `Failed to evaluate Exam.`;
           this.isEvaluationSuccess = false;
         }
       },

@@ -32,9 +32,14 @@ export class LoginComponent implements OnInit {
   login(): void {
     
       if (!this.credentials.username || !this.credentials.password || !this.role) {
-        alert('All fields are required: Username, Password, and Role.');
-        return;
-      }
+        alert('All fields are required: Username, Password, and Role.');
+        return;
+      }
+
+      // if( this.authService.fetchUserRole().toString() === this.role ) { 
+      //   alert('Role mismatch. Please select the correct role.');
+      //   return;
+      // }
   
     this.isLoading = true;
     this.errorMessage = '';
@@ -63,10 +68,13 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         console.error('Login failed or fetching role failed', error);
+        alert('Login failed. Please check your credentials.');
         if (error.error && error.error.message) {
           this.errorMessage = error.error.message;
+          alert(this.errorMessage);
         } else {
           this.errorMessage = 'Login failed. Please check your credentials.';
+          // alert(this.errorMessage);
         }
       }
     });

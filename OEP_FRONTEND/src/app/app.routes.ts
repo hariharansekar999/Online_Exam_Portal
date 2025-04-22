@@ -6,14 +6,44 @@ import { ExaminerPageComponent } from './components/examiner-page/examiner-page.
 import { StudentPageComponent } from './components/student-page/student-page.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AttendExamComponent } from './components/attend-exam/attend-exam.component';
+import { ErrorComponent } from './components/error/error.component';
 
 export const routes: Routes = [
-    { path: '', component:LandingPageComponent },
-    { path: 'login', component: LoginComponent },
-    { path: 'admin', component: AdminPageComponent ,canActivate: [AuthGuard], data: { roles: ['[ADMIN]'] }},
-    { path: 'examiner', component: ExaminerPageComponent, canActivate: [AuthGuard], data: { roles: ['[EXAMINER]'] }},
-    { path: 'student', component: StudentPageComponent, canActivate: [AuthGuard], data: { roles: ['[STUDENT]'] }},
-    { path: 'student/attend-exam/:examId', component: AttendExamComponent, canActivate: [AuthGuard], data: { roles: ['[STUDENT]'] }}
+    { 
+        path: '', 
+        component:LandingPageComponent 
+    },
+    { 
+        path: 'login', 
+        component: LoginComponent 
+    },
+    { 
+        path: 'admin', 
+        component: AdminPageComponent ,
+        canActivate: [AuthGuard], 
+        data: { roles: ['[ADMIN]'] }
+    },
+    { 
+        path: 'examiner', 
+        component: ExaminerPageComponent, 
+        canActivate: [AuthGuard], 
+        data: { roles: ['[EXAMINER]'] }
+    },
+    { 
+        path: 'student', 
+        component: StudentPageComponent, 
+        canActivate: [AuthGuard], 
+        data: { roles: ['[STUDENT]'] }},
+    { 
+        path: 'student/attend-exam/:examId', 
+        component: AttendExamComponent, 
+        canActivate: [AuthGuard], 
+        data: { roles: ['[STUDENT]'] }
+    },
+    { 
+        path: '**', 
+        component: ErrorComponent
+    }
 ];
 
 

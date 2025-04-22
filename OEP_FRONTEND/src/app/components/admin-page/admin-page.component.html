@@ -95,10 +95,10 @@
                             <thead class="table-primary">
                                 <tr>
                                     <th scope="col"><i class="bi bi-hash me-1"></i> ID</th>
-                                    <th scope="col"><i class="bi bi-person-vcard-fill me-1"></i> Username</th>
-                                    <th scope="col"><i class="bi bi-envelope-fill me-1"></i> Email</th>
-                                    <th scope="col"><i class="bi bi-tag-fill me-1"></i> Role(s)</th>
-                                    <th scope="col"><i class="bi bi-gear-fill me-1"></i> Actions</th>
+                                    <th scope="col"> Username</th>
+                                    <th scope="col"> Email</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -277,8 +277,8 @@
                             <tbody>
                                 <tr *ngFor="let report of reports">
                                     <td>{{ report.reportId }}</td>
-                                    <td>{{ report.feedback }}</td>
                                     <td>{{ report.userName }}</td>
+                                    <td>{{ report.examId }}</td>
                                     <td>{{ report.correctAnswers }}</td>
                                     <td>{{ report.score }}</td>
                                     <td>{{ report.percentage }}</td>
@@ -303,7 +303,7 @@
                             <p><strong>Username:</strong> {{ selectedReport?.userName }} | 'Student' </p>
                             <p><strong>Exam Id:</strong> {{ selectedReport?.examId }}</p>
                             <p><strong>Correct Answers:</strong> {{ selectedReport?.correctAnswers }}</p>
-                            <p><strong>Marks Obtained:</strong> {{ selectedReport?.score }} / {{ selectedReport?.totalQuestions }}</p>
+                            <p><strong>Marks Obtained:</strong> {{ selectedReport?.score }} / {{ (selectedReport?.totalQuestions || 0) * 2 }}</p>
                             <p><strong>Feedback By Examiner:</strong> {{ selectedReport?.feedback }} </p>
                             <div class="d-flex justify-content-end mt-3">
                                 <button class="btn btn-secondary rounded-pill" (click)="closeReportPopup()"><i class="bi bi-x-circle-fill me-1"></i> Close</button>

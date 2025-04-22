@@ -17,13 +17,13 @@ import { FormsModule } from '@angular/forms';
 export class AttendExamComponent implements OnInit {
   examId: number = 0;
   username: string = '';
-  examTitle: string = ''; // To store the exam title
+  examTitle: string = '';
   questions: Question[] = [];
   answers: { [questionId: number]: string } = {};
   timer: number = 0;
   interval: any;
   exams: Exam[] = [];
-  currentQuestionIndex: number = 0; // To track the current question
+  currentQuestionIndex: number = 0; 
 
   showModal: boolean = false;
   modalTitle: string = '';
@@ -41,7 +41,7 @@ export class AttendExamComponent implements OnInit {
     });
 
     this.route.queryParams.subscribe(params => {
-      this.username = params['username']; // Get username from query params
+      this.username = params['username']; 
     });
 
     console.log(this.username);
@@ -54,9 +54,9 @@ export class AttendExamComponent implements OnInit {
       this.exams = response.data || [];
       const exam = this.exams.find(ex => ex.examId === this.examId);
       if (exam) {
-        this.examTitle = exam.title || `Exam ID: ${this.examId}`; // Get exam title
+        this.examTitle = exam.title || `Exam ID: ${this.examId}`; 
         this.questions = exam.questions || [];
-        this.startTimer(exam); // Start timer after data is loaded
+        this.startTimer(exam); 
       }
     });
   }
@@ -82,7 +82,7 @@ export class AttendExamComponent implements OnInit {
     if (unansweredQuestions.length > 0) {
       this.openModal('Warning', 'Please answer all the questions before submitting the exam.');
       console.log('Warning triggered. Unanswered questions:', unansweredQuestions);
-      return; // Prevent submission
+      return; 
     }
 
     const examAnswers: ExamAnswersDTO[] = this.questions.map(question => ({
@@ -100,10 +100,11 @@ export class AttendExamComponent implements OnInit {
 
     this.studentService.submitResponse(examResponse).subscribe(
       (response) => {
-        this.router.navigate(['/student']); // Navigate to /student on success
+        alert('Exam submitted successfully!'); 
+        this.router.navigate(['/student']); 
       },
       (error) => {
-        this.openModal('Error', 'Error submitting exam.'); // Show error modal
+        this.openModal('Error', 'Error submitting exam.'); 
       }
     );
   }
@@ -116,9 +117,6 @@ export class AttendExamComponent implements OnInit {
 
   closeModal(): void {
     this.showModal = false;
-    // No navigation here anymore for success, handled in submitExam()
-    // For error, closing the modal will keep the user on the exam page.
-    // For warning, closing the modal will also keep the user on the exam page.
   }
 
 
@@ -132,7 +130,6 @@ export class AttendExamComponent implements OnInit {
     return num < 10 ? '0' + num : num.toString();
   }
 
-  // Navigation functions (for future enhancement)
   nextQuestion(): void {
     if (this.currentQuestionIndex < this.questions.length - 1) {
       this.currentQuestionIndex++;

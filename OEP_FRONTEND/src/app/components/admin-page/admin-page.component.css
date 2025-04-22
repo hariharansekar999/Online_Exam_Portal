@@ -1,29 +1,28 @@
-/* Define your custom color variables here for consistency */
 :root {
   --color-base-dark: #2a2f33;
   --color-text-on-dark: #ffffff;
   --color-primary-accent: #007bff;
   --color-primary-hover: #0056b3;
   --color-link-on-dark: #17a2b8;
-  --color-background-content: #f8f9fa; /* Light gray */
+  --color-background-content: #f8f9fa;
   --color-success: #28a745;
   --color-danger: #dc3545;
   --color-info: #17a2b8;
-  --color-demo: #6c757d; /* Gray for demo purposes */
+  --color-demo: #6c757d; 
   --color-warning: #ffc107;
-  --bs-dropdown-bg: var(--color-base-dark); /* Bootstrap dropdown background */
-  --bs-dropdown-link-color: var(--color-link-on-dark); /* Bootstrap dropdown link color */
-  --bs-dropdown-link-hover-bg: var(--color-primary-hover); /* Bootstrap dropdown link hover background */
-  --bs-dropdown-link-hover-color: var(--color-text-on-dark); /* Bootstrap dropdown link hover color */
-  --bs-dropdown-link-active-bg: var(--color-primary-accent); /* Bootstrap dropdown link active background */
-  --bs-dropdown-link-active-color: var(--color-text-on-dark); /* Bootstrap dropdown link active color */
+  --bs-dropdown-bg: var(--color-base-dark); 
+  --bs-dropdown-link-color: var(--color-link-on-dark); 
+  --bs-dropdown-link-hover-bg: var(--color-primary-hover); 
+  --bs-dropdown-link-hover-color: var(--color-text-on-dark);
+  --bs-dropdown-link-active-bg: var(--color-primary-accent); 
+  --bs-dropdown-link-active-color: var(--color-text-on-dark); 
 }
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 0.9rem;
   color: #333;
-  background-color: #f4f6f8; /* Light background for the body */
+  background-color: #f4f6f8;
   line-height: 1.6;
   margin: 0;
   padding: 0;
@@ -31,12 +30,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Existing CSS */
 .admin-sidebar-custom {
   background-color: var(--color-base-dark) !important;
   color: var(--color-text-on-dark) !important;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle right shadow */
-  transition: transform 0.3s ease-in-out; /* Smooth transition for potential animations */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); 
+  transition: transform 0.3s ease-in-out; 
 }
 
 .admin-sidebar-custom .nav-link {
@@ -147,24 +145,21 @@ body {
   gap: 0.5rem;
 }
 
-/* Existing admin-dropdown-menu styles */
 .admin-dropdown-menu {
-  /* Inheriting from global dropdown-menu */
+
 }
 
-/* Existing admin-dropdown-item styles */
 .admin-dropdown-item {
-  /* Inheriting from global dropdown-item */
+  
 }
 
 .admin-main-content {
   background-color: var(--color-background-content) !important;
   padding: 1.5rem;
   border-radius: 0.5rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); /* Subtle content shadow */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); 
 }
 
-/* Enhanced typography and spacing in main content */
 .admin-main-content h3 {
   color: var(--color-primary-accent);
   font-weight: bold;
@@ -400,34 +395,33 @@ body {
   top: 59px; /* Height of the navbar */
   left: 0;
   bottom: 0;
-  overflow-y: auto; /* Make sidebar scrollable if content overflows */
+  overflow-y: auto; 
 }
 
 .admin-sidebar-custom {
   background-color: #22262c !important;
     color: var(--color-text-on-dark) !important;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle right shadow */
-    transition: transform 0.3s ease-in-out; /* Smooth transition for potential animations */
-    opacity: 1 !important; /* Ensure full opacity */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); 
+    transition: transform 0.3s ease-in-out; 
+    opacity: 1 !important; 
 }
 
 .sidebar-content {
-  flex-grow: 1; /* Allow content to take up remaining space */
-  overflow-y: auto; /* Make sidebar content scrollable */
-  padding-bottom: 20px; /* Add some padding at the bottom */
+  flex-grow: 1;
+  overflow-y: auto; 
+  padding-bottom: 20px; 
 }
 
 .main-content-wrapper {
   flex-grow: 1;
-  margin-left: 280px; /* Width of the sidebar */
-  padding-top: 79px; /* Navbar height + some extra space */
+  margin-left: 280px; 
+  padding-top: 79px; 
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 20px;
-  overflow-y: auto; /* Make main content scrollable */
+  overflow-y: auto; 
 }
 
-/* Adjust for smaller screens if needed */
 @media (max-width: 768px) {
   .sidebar-wrapper {
       position: static; /* Revert to static for smaller screens */
