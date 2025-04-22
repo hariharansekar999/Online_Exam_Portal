@@ -57,4 +57,6 @@ public class ReportService {
             throw new ReportNotFoundException("Report for the username " + username + " not found");
         }
     }
+
+   
 }

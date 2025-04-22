@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 // import org.springframework.security.authentication.AuthenticationProvider;
 // import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -52,12 +53,17 @@ public class SecurityConfig {
         return http
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/users").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/update", "/api/auth/updatePassword").hasAnyRole("ADMIN", "STUDENT", "EXAMINER")
-                        .requestMatchers("/student/**").hasRole("STUDENT")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/examiner/**").hasRole("EXAMINER")
+                        .requestMatchers( "/api/auth/login", "/api/auth/getRole").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/users","/api/auth/register").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.OPTIONS, "/admin/**").permitAll()
+                        .requestMatchers("/api/auth/update", "/api/auth/updatePassword","/api/auth/getRole").hasAnyRole("ADMIN", "STUDENT", "EXAMINER")
+                        .requestMatchers(HttpMethod.OPTIONS, "/student/**").permitAll()
+                        .requestMatchers("/student/**").hasAnyRole("STUDENT","EXAMINER","ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN","EXAMINER")
+                        .requestMatchers(HttpMethod.OPTIONS,"/examiner/**").permitAll()
+                        .requestMatchers("/examiner/**").hasAnyRole("EXAMINER","ADMIN")
+                        // .requestMatchers("/examiner/allExams").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->

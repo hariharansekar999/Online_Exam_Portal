@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.cts.onlineexamportall.exception.ExamNotFoundException;
 import com.cts.onlineexamportall.exception.InvalidResponseException;
 import com.cts.onlineexamportall.dao.ExamDAO;
+import com.cts.onlineexamportall.dao.LeaderboardDAO;
 import com.cts.onlineexamportall.dao.QuestionDAO;
 import com.cts.onlineexamportall.dao.ReportDAO;
 import com.cts.onlineexamportall.dao.StudentExamResponseDAO;
@@ -29,6 +30,8 @@ import com.cts.onlineexamportall.model.User;
 @Service
 public class ExamService {
 
+    private final LeaderboardService leaderboardService;
+
     private static final Logger logger = LogManager.getLogger(ExamService.class);
 
     @Autowired
@@ -45,6 +48,13 @@ public class ExamService {
 
     @Autowired
     private StudentExamResponseDAO responseDAO;
+
+    @Autowired
+    private LeaderboardDAO leaderboardDAO;
+
+    ExamService(LeaderboardService leaderboardService) {
+        this.leaderboardService = leaderboardService;
+    }
 
     public boolean examExists(long examId){
         logger.info("Checking if exam exists with ID: {}", examId);
@@ -198,6 +208,14 @@ public class ExamService {
         Optional<Exam> optionalExam = examDAO.findById(examId);
         Exam exam = null;
 
+        Optional<Report> existingReport = reportDAO.findByExamIdAndUserName(examId, username);
+        if (existingReport.isPresent()) {
+            logger.warn("Report already exists for exam ID: {} and username: {}", examId, username);
+            // return existingReport.get(); //Option 1: return the existing report.
+            throw new IllegalStateException("Report already exists for exam ID: " + examId + " and username: " + username); //Option 2: Throw an exception.
+        }
+
+
         if (optionalExam.isEmpty()) { 
             logger.error("Exam not found with ID: {}", examId);
             throw new ExamNotFoundException("Exam with Id " + examId + " not found!");
@@ -242,6 +260,9 @@ public class ExamService {
 
             reportDAO.save(report);
             logger.info("Report generated for exam ID: {} and username: {}", examId, username);
+
+            List<Report> reports = reportDAO.findByExamId(examId); // Assuming you have this method
+            leaderboardService.createLeaderboardEntries(examId, reports);
     
         } catch (IllegalArgumentException e) {
             logger.error("Error: {}", e.getMessage());
@@ -284,6 +305,10 @@ public class ExamService {
             logger.error("An unexpected error occurred: {}", e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public Exam getExamById(long examId) {
+        return examDAO.getReferenceById(examId);
     }
 
     

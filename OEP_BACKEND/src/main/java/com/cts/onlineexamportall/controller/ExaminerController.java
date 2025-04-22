@@ -1,12 +1,14 @@
 package com.cts.onlineexamportall.controller;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 // import org.apache.logging.log4j.LogManager;
 // import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +37,7 @@ import com.cts.onlineexamportall.service.ReportService;
 
 @RestController
 @RequestMapping("/examiner")
+@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.PUT, RequestMethod.DELETE})
 public class ExaminerController {
 
 	// private static final Logger logger = LogManager.getLogger(StudentController.class);
@@ -137,6 +141,10 @@ public class ExaminerController {
     @PostMapping("/createExam/{category}")
     public ResponseEntity<Response<?>> createExam(@PathVariable String category, @RequestBody ExamDTO examDTO){
         try{
+            if( !questionService.categoryExists(category)  ){
+                throw new Exception("The given category does not exist!");
+            }
+
             if( examService.examNameExists(examDTO.getTitle()) ){
                 throw new ExamExistsException("The given title already exists!");
             }
@@ -157,10 +165,13 @@ public class ExaminerController {
         catch(MandatoryFieldMissingException ex){
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "Error in creating the exam", ex.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }catch( Exception ex){
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, "Error in creating the exam", ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
  
-    @PutMapping("/updateExam")
+    @PutMapping("/updateExam/{examId}")
     public ResponseEntity<Response<?>> updateExam(@PathVariable long examId , @RequestBody ExamDTO examDTO){
         try{
             if( !examService.examExists(examId)){
@@ -176,15 +187,30 @@ public class ExaminerController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
- 
-    @DeleteMapping("/deleteExam/{examId}")
-    public ResponseEntity<Response<?>> deleteExam(@PathVariable long examId){
+
+    @GetMapping("/getExam/{examId}")
+    public ResponseEntity<Response<?>> getExamById(@PathVariable long examId){
         try{
             if( !examService.examExists(examId)){
                 throw new ExamNotFoundException("The exam with id "+ examId + "does not exists");
             }
  
+            Exam exam = examService.getExamById(examId);
+            Response<Exam> response = new Response<Exam>(true, HttpStatus.OK, exam, null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch(ExamNotFoundException ex){
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+ 
+    @DeleteMapping("/deleteExam/{examId}")
+    public ResponseEntity<Response<?>> deleteExam(@PathVariable long examId){
+        try{
+            System.out.println("Exam with id "+ examId + " deletetion in progress");
             examService.deleteExam(examId);
+            System.out.println("Exam with id "+ examId + " deleted successfully");
             Response<String> response = new Response<>(false, HttpStatus.OK, "Exam deleted successfully!", null);
 			return new ResponseEntity<>(response, HttpStatus.OK);
         }
@@ -250,6 +276,19 @@ public class ExaminerController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    // @DeleteMapping("/deleteReport/{examId}/{username}")
+    // public ResponseEntity<Response<?>> deleteReport(@PathVariable long examId, @PathVariable String username) {
+    //     try {
+    //         reportService.deleteReport(username, examId);
+    //         Response<String> response = new Response<>(true, HttpStatus.OK, "Report deleted successfully!", null);
+    //         return new ResponseEntity<>(response, HttpStatus.OK);
+    //     } 
+    //     catch (ReportNotFoundException ex) {
+    //         Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, ex.getMessage());
+    //         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    //     }
+    // }
  
       
 

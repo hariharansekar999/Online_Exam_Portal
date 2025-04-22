@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cts.onlineexamportall.dto.ExamResponseDTO;
@@ -16,11 +17,16 @@ import com.cts.onlineexamportall.exception.DuplicateAttemptException;
 import com.cts.onlineexamportall.exception.ExamNotFoundException;
 import com.cts.onlineexamportall.exception.PasswordMisMatchException;
 import com.cts.onlineexamportall.exception.UserNotFoundException;
+import com.cts.onlineexamportall.model.Exam;
+import com.cts.onlineexamportall.model.Leaderboard;
 import com.cts.onlineexamportall.model.Report;
 import com.cts.onlineexamportall.model.User;
 import com.cts.onlineexamportall.service.ExamService;
+import com.cts.onlineexamportall.service.LeaderboardService;
 import com.cts.onlineexamportall.service.ReportService;
 import com.cts.onlineexamportall.service.UserService;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/student")
+@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.DELETE})
 public class StudentController {
 
     private static final Logger logger = LogManager.getLogger(StudentController.class);
@@ -41,6 +48,9 @@ public class StudentController {
 
     @Autowired
     private ReportService reportService;
+
+    @Autowired
+    private LeaderboardService leaderboardService;
 
     @GetMapping("/profile")
     public ResponseEntity<Response<?>> getProfile(@RequestParam String username) {
@@ -88,6 +98,18 @@ public class StudentController {
         }
     }
 
+    @GetMapping("/getExams")
+    public ResponseEntity<Response<?>> getExams() {
+        try {
+            List<Exam> exams = examService.getAllExams();
+            Response<List<Exam>> response = new Response<>(true, HttpStatus.OK, exams, null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping("/report/{username}")
     public ResponseEntity<Response<?>> getMethodName(@PathVariable String username) {
         try {
@@ -98,6 +120,22 @@ public class StudentController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (UserNotFoundException e) {
             logger.error("Error fetching reports for username: {}. Reason: {}", username, e.getMessage());
+            Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    //leaderboard
+    @GetMapping("/leaderboard/{examId}")
+    public ResponseEntity<Response<?>> getLeaderboard(@PathVariable Long examId) {
+        try {
+            logger.info("Fetching leaderboard for examId: {}", examId);
+            List<Leaderboard> leaderboard = leaderboardService.getLeaderboardByExamId(examId);
+            Response<List<Leaderboard>> response = new Response<>(true, HttpStatus.OK, leaderboard, "Leaderboard fetched successfully");
+            logger.info("Leaderboard fetched successfully for examId: {}", examId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error fetching leaderboard for examId: {}. Reason: {}", examId, e.getMessage());
             Response<String> response = new Response<>(false, HttpStatus.BAD_REQUEST, null, e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
