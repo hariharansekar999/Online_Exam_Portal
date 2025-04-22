@@ -17,6 +17,7 @@ interface ApiResponse<T> {
   errorMessage: string | null;
 }
 
+//interfacing UserRequest
 interface UserRequest {
   userName: string;
   email: string;
@@ -24,6 +25,7 @@ interface UserRequest {
   password: string;
 }
 
+//interfacing LeaderboardEntry
 interface LeaderboardEntry {
   id: number;
   examId: number;
