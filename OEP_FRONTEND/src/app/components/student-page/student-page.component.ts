@@ -171,7 +171,7 @@ export class StudentPageComponent implements OnInit {
 
   goToAttendExam(examId: number, username: string): void {
     this.router.navigate(['/student/attend-exam', examId], {
-      queryParams: { username: username } // Pass username as query parameter
+      queryParams: { username: username }
     });
   }
 

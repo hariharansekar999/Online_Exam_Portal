@@ -36,10 +36,6 @@ export class LoginComponent implements OnInit {
         return;
       }
 
-      // if( this.authService.fetchUserRole().toString() === this.role ) { 
-      //   alert('Role mismatch. Please select the correct role.');
-      //   return;
-      // }
   
     this.isLoading = true;
     this.errorMessage = '';
